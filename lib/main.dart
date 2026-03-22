@@ -36,10 +36,49 @@ class _DevoraAppState extends State<DevoraApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Devora Mobile',
+      title: 'SMA NEGERI 4 JEMBER',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: const Color(0xFFF7FAF8),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2B5A41),
+          primary: const Color(0xFF2B5A41), // Dark Green
+          secondary: const Color(0xFFE4F1E8), // Light Mint
+          surface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFFF7FAF8),
+          elevation: 0,
+          iconTheme: IconThemeData(color: Color(0xFF2B5A41)),
+          titleTextStyle: TextStyle(
+            color: Color(0xFF2B5A41),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          centerTitle: false,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF679B7B),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF2F4F2),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
         useMaterial3: true,
       ),
       home: _isLoading 
@@ -48,3 +87,4 @@ class _DevoraAppState extends State<DevoraApp> {
     );
   }
 }
+

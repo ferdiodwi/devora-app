@@ -118,7 +118,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getProfile() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/member/profile'), 
+      Uri.parse('$baseUrl/auth/me'), 
       headers: await _getHeaders(),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
@@ -127,6 +127,14 @@ class ApiService {
   static Future<Map<String, dynamic>> getLoans() async {
     final response = await http.get(
       Uri.parse('$baseUrl/loans'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> getEbooks(String query) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/ebooks/search?q=$query'),
       headers: await _getHeaders(),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
