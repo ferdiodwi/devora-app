@@ -89,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ElevatedButton(
               onPressed: _isLoading ? null : _register,
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-              child: _isLoading ? const CircularProgressIndicator() : const Text('Daftar ke Devora'),
+              child: _isLoading ? const CircularProgressIndicator() : const Text('Daftar ke SMA NEGERI 4 JEMBER'),
             ),
           ],
         ),

@@ -1,34 +1,32 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../book_detail_screen.dart';
-import 'dart:async';
 
-class EbookTab extends StatefulWidget {
-  const EbookTab({super.key});
+class CatalogTab extends StatefulWidget {
+  const CatalogTab({super.key});
 
   @override
-  State<EbookTab> createState() => _EbookTabState();
+  State<CatalogTab> createState() => _CatalogTabState();
 }
 
-class _EbookTabState extends State<EbookTab> {
+class _CatalogTabState extends State<CatalogTab> {
   List<dynamic> _books = [];
+  List<dynamic> _filteredBooks = [];
   bool _isLoading = true;
-  String _searchQuery = 'bestseller'; // default Google Books query
-  Timer? _debounce;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchBooks(_searchQuery);
+    _fetchBooks();
   }
 
-  void _fetchBooks(String query) async {
-    if (!mounted) return;
-    setState(() => _isLoading = true);
-    final res = await ApiService.getEbooks(query.isEmpty ? 'bestseller' : query);
+  void _fetchBooks() async {
+    final res = await ApiService.getBooks();
     if (res['status'] == 200 && mounted) {
       setState(() {
         _books = res['data']['data'] ?? [];
+        _filteredBooks = _books;
         _isLoading = false;
       });
     } else {
@@ -36,18 +34,20 @@ class _EbookTabState extends State<EbookTab> {
     }
   }
 
-  void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
+  void _filterBooks(String query) {
+    setState(() {
       _searchQuery = query;
-      _fetchBooks(query);
+      if (query.isEmpty) {
+        _filteredBooks = _books;
+      } else {
+        _filteredBooks = _books.where((book) {
+          final title = (book['title'] ?? '').toString().toLowerCase();
+          final author = (book['author'] ?? '').toString().toLowerCase();
+          final q = query.toLowerCase();
+          return title.contains(q) || author.contains(q);
+        }).toList();
+      }
     });
-  }
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    super.dispose();
   }
 
   @override
@@ -55,7 +55,7 @@ class _EbookTabState extends State<EbookTab> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
-        title: const Text('E-Library (Google Books)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('Katalog Buku', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -66,9 +66,9 @@ class _EbookTabState extends State<EbookTab> {
               color: Colors.white,
               padding: const EdgeInsets.all(16.0),
               child: TextField(
-                onChanged: _onSearchChanged,
+                onChanged: _filterBooks,
                 decoration: InputDecoration(
-                  hintText: 'Cari jutaan buku digital...',
+                  hintText: 'Cari judul buku atau penulis...',
                   prefixIcon: const Icon(Icons.search, color: Colors.grey),
                   fillColor: const Color(0xFFF7FAF8),
                   filled: true,
@@ -82,10 +82,10 @@ class _EbookTabState extends State<EbookTab> {
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _books.isEmpty
-                      ? const Center(child: Text('Tidak ada e-book ditemukan.'))
+                  : _filteredBooks.isEmpty
+                      ? const Center(child: Text('Tidak ada buku ditemukan.'))
                       : RefreshIndicator(
-                          onRefresh: () async => _fetchBooks(_searchQuery),
+                          onRefresh: () async => _fetchBooks(),
                           child: GridView.builder(
                             padding: const EdgeInsets.all(16),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -94,14 +94,17 @@ class _EbookTabState extends State<EbookTab> {
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                             ),
-                            itemCount: _books.length,
+                            itemCount: _filteredBooks.length,
                             itemBuilder: (context, index) {
-                              final book = _books[index];
+                              final book = _filteredBooks[index];
+                              final titleStr = book['title']?.toString() ?? 'B';
+                              final initials = titleStr.length > 1 ? titleStr.substring(0, 2).toUpperCase() : titleStr.toUpperCase();
+
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => BookDetailScreen(book: book, isEbook: true)),
+                                    MaterialPageRoute(builder: (_) => BookDetailScreen(book: book)),
                                   );
                                 },
                                 child: Container(
@@ -127,7 +130,14 @@ class _EbookTabState extends State<EbookTab> {
                                                   )
                                                 : null,
                                           ),
-                                          child: book['cover_image'] == null ? const Center(child: Icon(Icons.book, size: 40, color: Colors.grey)) : null,
+                                          child: book['cover_image'] == null 
+                                            ? Center(
+                                                child: Text(
+                                                  initials,
+                                                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withOpacity(0.3)),
+                                                ),
+                                              ) 
+                                            : null,
                                         ),
                                       ),
                                       Padding(
@@ -148,12 +158,6 @@ class _EbookTabState extends State<EbookTab> {
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                                             ),
-                                            const SizedBox(height: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(4)),
-                                              child: Text('E-BOOK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blue.shade700)),
-                                            )
                                           ],
                                         ),
                                       ),
