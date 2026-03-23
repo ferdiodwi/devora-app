@@ -13,7 +13,7 @@ class EbookTab extends StatefulWidget {
 class _EbookTabState extends State<EbookTab> {
   List<dynamic> _books = [];
   bool _isLoading = true;
-  String _searchQuery = 'bestseller'; // default Google Books query
+  String _searchQuery = 'indonesia'; // default Internet Archive query
   Timer? _debounce;
 
   @override
@@ -55,7 +55,7 @@ class _EbookTabState extends State<EbookTab> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
-        title: const Text('E-Library (Google Books)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text('E-Library (Internet Archive)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
