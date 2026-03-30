@@ -1,11 +1,11 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Ganti dengan IP lokal emulator atau IP server jika dites ke physical device
-  // Emulator Android = 10.0.2.2. Gunakan /api/v1/ prefix API
-  static const String baseUrl = 'http://192.168.0.38:8000/api/v1';
+  // Hanya membaca dari file .env. URL gagal dimuat jika terjadi masalah dengan file .env
+  static String get baseUrl => dotenv.env['API_URL'] ?? '';
 
   static Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
