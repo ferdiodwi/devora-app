@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../book_detail_screen.dart';
+import '../chatbot_screen.dart';
 import 'profile_tab.dart';
 
 class HomeTab extends StatefulWidget {
@@ -55,6 +56,17 @@ class _HomeTabState extends State<HomeTab> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const ChatbotScreen()),
+          );
+        },
+        backgroundColor: const Color(0xFF2B5A41),
+        elevation: 4,
+        child: const Icon(Icons.auto_awesome, color: Colors.white),
+      ),
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())

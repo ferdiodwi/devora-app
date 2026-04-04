@@ -139,4 +139,50 @@ class ApiService {
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
+
+  // --- CHATBOT --- //
+
+  static Future<Map<String, dynamic>> getConversations() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/chatbot/conversations'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> createConversation() async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chatbot/conversations'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> deleteConversation(int id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/chatbot/conversations/$id'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> getMessages(int conversationId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/chatbot/conversations/$conversationId/messages'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> sendChatMessage(int conversationId, String message) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/chatbot/send'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'conversation_id': conversationId,
+        'message': message,
+      }),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
 }
