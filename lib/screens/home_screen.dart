@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tabs/home_tab.dart';
 import 'tabs/catalog_tab.dart';
-import 'tabs/ebook_tab.dart';
 import 'tabs/loans_tab.dart';
 import 'tabs/profile_tab.dart';
 
@@ -18,9 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _tabs = const [
     HomeTab(),
     CatalogTab(),
-    EbookTab(),
     LoansTab(),
-    ProfileTab(),
   ];
 
   @override
@@ -53,19 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'KATALOG',
             ),
             NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book, color: Color(0xFF2B5A41)),
-              label: 'E-BOOKS',
-            ),
-            NavigationDestination(
               icon: Icon(Icons.history_outlined),
               selectedIcon: Icon(Icons.history, color: Color(0xFF2B5A41)),
               label: 'HISTORY',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person, color: Color(0xFF2B5A41)),
-              label: 'PROFILE',
             ),
           ],
         ),

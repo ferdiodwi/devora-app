@@ -52,16 +52,10 @@ class _EbookTabState extends State<EbookTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF8),
-      appBar: AppBar(
-        title: const Text('E-Library (Internet Archive)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
+    return Container(
+      color: const Color(0xFFF7FAF8),
+      child: Column(
+        children: [
             Container(
               color: Colors.white,
               padding: const EdgeInsets.all(16.0),
@@ -167,7 +161,6 @@ class _EbookTabState extends State<EbookTab> {
             ),
           ],
         ),
-      ),
     );
   }
 }
