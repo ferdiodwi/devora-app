@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../book_detail_screen.dart';
+import 'profile_tab.dart';
 
 class HomeTab extends StatefulWidget {
   const HomeTab({super.key});
@@ -80,18 +81,26 @@ class _HomeTabState extends State<HomeTab> {
                             ),
                           ],
                         ),
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2B5A41).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF2B5A41).withOpacity(0.2), width: 2),
-                          ),
-                          child: Center(
-                            child: Text(
-                              firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2B5A41), fontSize: 20),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ProfileTab()),
+                            );
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2B5A41).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFF2B5A41).withOpacity(0.2), width: 2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2B5A41), fontSize: 20),
+                              ),
                             ),
                           ),
                         ),
