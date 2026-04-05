@@ -108,9 +108,15 @@ class ApiService {
   }
   // --- APP FEATURES --- //
 
-  static Future<Map<String, dynamic>> getBooks() async {
+  static Future<Map<String, dynamic>> getBooks({int page = 1, String q = '', String sort = ''}) async {
+    final queryParams = <String>[];
+    queryParams.add('page=$page');
+    if (q.isNotEmpty) queryParams.add('q=$q');
+    if (sort.isNotEmpty && sort != 'Semua') queryParams.add('sort=$sort');
+
+    final queryString = queryParams.join('&');
     final response = await http.get(
-      Uri.parse('$baseUrl/books'),
+      Uri.parse('$baseUrl/books?$queryString'),
       headers: await _getHeaders(),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
