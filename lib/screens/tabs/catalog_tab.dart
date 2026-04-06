@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../book_detail_screen.dart';
 import 'ebook_tab.dart';
+import '../../widgets/notification_bell.dart';
 
 class CatalogTab extends StatefulWidget {
   const CatalogTab({super.key});
@@ -134,6 +135,10 @@ class _CatalogTabState extends State<CatalogTab> {
           title: const Text('Katalog', style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Colors.white,
           elevation: 0,
+          actions: const [
+            NotificationBell(),
+            SizedBox(width: 4),
+          ],
           bottom: const TabBar(
             labelColor: Color(0xFF2B5A41),
             unselectedLabelColor: Colors.grey,
