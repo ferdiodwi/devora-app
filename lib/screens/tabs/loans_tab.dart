@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
+import '../../widgets/notification_bell.dart';
 
 class LoansTab extends StatefulWidget {
   const LoansTab({super.key});
@@ -41,8 +42,8 @@ class _LoansTabState extends State<LoansTab> with SingleTickerProviderStateMixin
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
         title: const Text('Devora', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+        actions: const [
+          NotificationBell(),
         ],
       ),
       body: SafeArea(
