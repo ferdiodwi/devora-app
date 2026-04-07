@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "770757877422",
+    "project_id": "devora-app",
+    "storage_bucket": "devora-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770757877422:android:8fa15b3f3ffce6da2b573f",
+        "android_client_info": {
+          "package_name": "com.example.devora_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpDESFbX5_0NjABkQ8vZI01A2-EVWuDsU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../book_reader_screen.dart';
+import '../../widgets/notification_bell.dart';
 
 class LoansTab extends StatefulWidget {
   const LoansTab({super.key});
@@ -71,6 +72,10 @@ class _LoansTabState extends State<LoansTab>
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
+        title: const Text('Devora', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: const [
+          NotificationBell(),
+        ],
       ),
       body: SafeArea(
         child: Column(

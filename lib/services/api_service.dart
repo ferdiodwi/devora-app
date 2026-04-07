@@ -112,9 +112,15 @@ class ApiService {
   }
   // --- APP FEATURES --- //
 
-  static Future<Map<String, dynamic>> getBooks() async {
+  static Future<Map<String, dynamic>> getBooks({int page = 1, String q = '', String sort = ''}) async {
+    final queryParams = <String>[];
+    queryParams.add('page=$page');
+    if (q.isNotEmpty) queryParams.add('q=$q');
+    if (sort.isNotEmpty && sort != 'Semua') queryParams.add('sort=$sort');
+
+    final queryString = queryParams.join('&');
     final response = await http.get(
-      Uri.parse('$baseUrl/books'),
+      Uri.parse('$baseUrl/books?$queryString'),
       headers: await _getHeaders(),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
@@ -134,6 +140,42 @@ class ApiService {
       headers: await _getHeaders(),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  // --- NOTIFICATIONS --- //
+
+  static Future<Map<String, dynamic>> getNotifications() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/notifications'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> markNotificationRead(int id) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/notifications/$id/read'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> markAllNotificationsRead() async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/notifications/read-all'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<void> saveFcmToken(String token, String device) async {
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/member/fcm-token'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'token': token, 'device': device}),
+      );
+    } catch (_) {}
   }
 
   static Future<Map<String, dynamic>> getEbooks(String query) async {

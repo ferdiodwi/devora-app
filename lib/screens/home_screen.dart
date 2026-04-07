@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
     HomeTab(),
     CatalogTab(),
     LoansTab(),
+    ProfileTab(),
   ];
 
   @override
@@ -54,10 +55,14 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIcon: Icon(Icons.history, color: Color(0xFF2B5A41)),
               label: 'HISTORY',
             ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person, color: Color(0xFF2B5A41)),
+              label: 'PROFIL',
+            ),
           ],
         ),
       ),
     );
   }
 }
-
