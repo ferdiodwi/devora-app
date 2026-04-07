@@ -13,7 +13,7 @@ class EbookTab extends StatefulWidget {
 class _EbookTabState extends State<EbookTab> {
   List<dynamic> _books = [];
   bool _isLoading = true;
-  String _searchQuery = 'indonesia'; // default Internet Archive query
+  String _searchQuery = 'indonesia';
   Timer? _debounce;
 
   @override
@@ -25,10 +25,14 @@ class _EbookTabState extends State<EbookTab> {
   void _fetchBooks(String query) async {
     if (!mounted) return;
     setState(() => _isLoading = true);
-    final res = await ApiService.getEbooks(query.isEmpty ? 'bestseller' : query);
+
+    final res = await ApiService.getEbooks(
+      query.isEmpty ? 'indonesia' : query,
+    );
+
     if (res['status'] == 200 && mounted) {
       setState(() {
-        _books = res['data']['data'] ?? [];
+        _books = res['data'] ?? [];
         _isLoading = false;
       });
     } else {
@@ -50,117 +54,211 @@ class _EbookTabState extends State<EbookTab> {
     super.dispose();
   }
 
+  // 🔥 helper snackbar
+  void showMsg(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    // 🔥 FILTER RINGAN (biar tetap banyak tapi bersih)
+    final filteredBooks = _books.where((book) {
+      final id = book['id']?.toString() ?? "";
+
+      if (id.contains('http')) return false;
+      if (id.toLowerCase().contains('mp3')) return false;
+
+      return true;
+    }).toList();
+
     return Container(
       color: const Color(0xFFF7FAF8),
       child: Column(
         children: [
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                onChanged: _onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: 'Cari jutaan buku digital...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  fillColor: const Color(0xFFF7FAF8),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
-                  ),
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: _onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Cari jutaan buku digital...',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                fillColor: const Color(0xFFF7FAF8),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _books.isEmpty
-                      ? const Center(child: Text('Tidak ada e-book ditemukan.'))
-                      : RefreshIndicator(
-                          onRefresh: () async => _fetchBooks(_searchQuery),
-                          child: GridView.builder(
-                            padding: const EdgeInsets.all(16),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.58,
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                            ),
-                            itemCount: _books.length,
-                            itemBuilder: (context, index) {
-                              final book = _books[index];
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => BookDetailScreen(book: book, isEbook: true)),
-                                  );
-                                },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5))
-                                    ],
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey.shade200,
-                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                            image: book['cover_image'] != null
-                                                ? DecorationImage(
-                                                    image: NetworkImage(book['cover_image']),
-                                                    fit: BoxFit.cover,
-                                                  )
-                                                : null,
-                                          ),
-                                          child: book['cover_image'] == null ? const Center(child: Icon(Icons.book, size: 40, color: Colors.grey)) : null,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(12.0),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              book['title'] ?? 'Tanpa Judul',
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              book['author'] ?? '-',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(color: Colors.blue.shade50, borderRadius: BorderRadius.circular(4)),
-                                              child: Text('E-BOOK', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.blue.shade700)),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
+          ),
+
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredBooks.isEmpty
+                    ? const Center(child: Text('Tidak ada e-book ditemukan.'))
+                    : RefreshIndicator(
+                        onRefresh: () async => _fetchBooks(_searchQuery),
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.58,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
                           ),
+                          itemCount: filteredBooks.length,
+                          itemBuilder: (context, index) {
+                            final book = filteredBooks[index];
+
+                            return GestureDetector(
+                              onTap: () async {
+                                final id = book['id'];
+
+                                // 🔥 ambil detail PDF dari backend
+                                final res =
+                                    await ApiService.getEbookDetail(id);
+
+                                if (res['status'] != 200 ||
+                                    res['data'] == null) {
+                                  showMsg('Gagal mengambil ebook');
+                                  return;
+                                }
+
+                                final url = res['data']['pdf_link'];
+
+                                if (url == null || url.isEmpty) {
+                                  showMsg(
+                                      'Ebook tidak tersedia dalam PDF');
+                                  return;
+                                }
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BookDetailScreen(
+                                      book: {
+                                        ...book,
+                                        'pdf_link': url,
+                                      },
+                                      isEbook: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withOpacity(0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    )
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade200,
+                                          borderRadius:
+                                              const BorderRadius.vertical(
+                                                  top: Radius.circular(16)),
+                                          image: book['cover_image'] != null
+                                              ? DecorationImage(
+                                                  image: NetworkImage(
+                                                      book['cover_image']),
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : null,
+                                        ),
+                                        child: book['cover_image'] == null
+                                            ? const Center(
+                                                child: Icon(Icons.book,
+                                                    size: 40,
+                                                    color: Colors.grey),
+                                              )
+                                            : null,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            book['title'] ??
+                                                'Tanpa Judul',
+                                            maxLines: 2,
+                                            overflow:
+                                                TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontWeight:
+                                                    FontWeight.bold,
+                                                fontSize: 13),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            book['author'] ?? '-',
+                                            maxLines: 1,
+                                            overflow:
+                                                TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color:
+                                                  Colors.grey.shade600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.blue.shade50,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      4),
+                                            ),
+                                            child: Text(
+                                              'E-BOOK',
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight:
+                                                    FontWeight.bold,
+                                                color:
+                                                    Colors.blue.shade700,
+                                              ),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
-            ),
-          ],
-        ),
+                      ),
+          ),
+        ],
+      ),
     );
   }
 }
