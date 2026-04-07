@@ -67,11 +67,6 @@ class _LoansTabState extends State<LoansTab>
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
-        title: const Text(
-          'Devora',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () {})],
         title: const Text('Devora', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: const [
           NotificationBell(),
@@ -120,7 +115,7 @@ class _LoansTabState extends State<LoansTab>
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                       ),
                     ],
@@ -174,7 +169,7 @@ class _LoansTabState extends State<LoansTab>
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
