@@ -56,9 +56,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   Future<void> loadLastPage() async {
     final res = await ApiService.getReadingProgress(widget.ebookId);
 
-    if (res != null) {
-      lastPage = res['current_page'];
-    }
+    lastPage = res['data']['current_page'] ?? 1;
   }
 
   @override

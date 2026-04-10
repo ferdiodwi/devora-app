@@ -10,8 +10,18 @@ class LoansTab extends StatefulWidget {
   State<LoansTab> createState() => _LoansTabState();
 }
 
+String _filter = 'semua';
+
 class _LoansTabState extends State<LoansTab>
     with SingleTickerProviderStateMixin {
+  String formatDate(String? date) {
+    if (date == null) return '-';
+    final d = DateTime.tryParse(date);
+    if (d == null) return '-';
+
+    return "${d.day}/${d.month}/${d.year}";
+  }
+
   List<dynamic> _loans = [];
   bool _isLoading = true;
   late TabController _tabController;
@@ -29,27 +39,31 @@ class _LoansTabState extends State<LoansTab>
 
     List<dynamic> combined = [];
 
-    // 📚 buku fisik
     if (loanRes['status'] == 200) {
       combined.addAll(loanRes['data']['data'] ?? []);
     }
 
-    // 📖 ebook
     for (var ebook in ebookRes) {
       final detail = await ApiService.getEbookDetail(ebook['ebook_id']);
 
+      int current = ebook['current_page'] ?? 0;
+      int total = ebook['total_page'] ?? 0;
+
+      String status = (total > 0 && current >= total) ? 'selesai' : 'aktif';
+
       combined.add({
         'type': 'ebook',
-        'status': 'aktif',
+        'status': status,
         'book': {
           'title': detail['data']['title'],
           'cover_image': detail['data']['cover_image'],
           'author': '-',
         },
         'ebook_id': ebook['ebook_id'],
-        'current_page': ebook['current_page'],
-        'total_page': ebook['total_page'],
+        'current_page': current,
+        'total_page': total,
         'pdf_link': detail['data']['pdf_link'],
+        'updated_at': ebook['updated_at'],
       });
     }
 
@@ -61,16 +75,28 @@ class _LoansTabState extends State<LoansTab>
 
   @override
   Widget build(BuildContext context) {
-    final activeLoans = _loans.where((l) => l['status'] != 'selesai').toList();
-    final pastLoans = _loans.where((l) => l['status'] == 'selesai').toList();
+    List<dynamic> filteredLoans = _loans.where((l) {
+      if (_filter == 'ebook') return l['type'] == 'ebook';
+      if (_filter == 'fisik') return l['type'] != 'ebook';
+      return true;
+    }).toList();
+
+    final activeLoans = filteredLoans
+        .where((l) => l['status'] != 'selesai')
+        .toList();
+
+    final pastLoans = filteredLoans
+        .where((l) => l['status'] == 'selesai')
+        .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAF8),
       appBar: AppBar(
-        title: const Text('Devora', style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: const [
-          NotificationBell(),
-        ],
+        title: const Text(
+          'Devora',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: const [NotificationBell()],
       ),
       body: SafeArea(
         child: Column(
@@ -115,7 +141,7 @@ class _LoansTabState extends State<LoansTab>
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 10,
                       ),
                     ],
@@ -131,6 +157,19 @@ class _LoansTabState extends State<LoansTab>
               ),
             ),
             const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Row(
+                children: [
+                  _buildFilterButton('Semua', 'semua'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('E-Book', 'ebook'),
+                  const SizedBox(width: 8),
+                  _buildFilterButton('Fisik', 'fisik'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -143,6 +182,34 @@ class _LoansTabState extends State<LoansTab>
                     ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterButton(String label, String value) {
+    final isSelected = _filter == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _filter = value;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF2B5A41) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : Colors.black87,
+          ),
         ),
       ),
     );
@@ -161,6 +228,51 @@ class _LoansTabState extends State<LoansTab>
           final loan = loans[index];
           final book = loan['book'] ?? {};
           final isEbook = loan['type'] == 'ebook';
+
+          DateTime? dueDate = loan['due_date'] != null
+              ? DateTime.tryParse(loan['due_date'])
+              : null;
+
+          DateTime today = DateTime.now();
+
+          String dateText;
+
+          if (isEbook) {
+            if (isActive) {
+              dateText = "Dibaca terakhir: ${formatDate(loan['updated_at'])}";
+            } else {
+              dateText = "Selesai dibaca: ${formatDate(loan['updated_at'])}";
+            }
+          } else {
+            if (isActive) {
+              if (dueDate != null && today.isAfter(dueDate)) {
+                dateText = "Terlambat (Seharusnya: ${loan['due_date']})";
+              } else {
+                dateText = "Pengembalian: ${loan['due_date']}";
+              }
+            } else {
+              dateText = "Dikembalikan: ${loan['return_date']}";
+            }
+          }
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isEbook ? Colors.blue.shade50 : Colors.brown.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isEbook ? "E-BOOK" : "FISIK",
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: isEbook ? Colors.blue : Colors.brown,
+                  ),
+                ),
+              ),
+            ],
+          );
           return Container(
             margin: const EdgeInsets.only(bottom: 24),
             padding: const EdgeInsets.all(16),
@@ -169,7 +281,7 @@ class _LoansTabState extends State<LoansTab>
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -215,7 +327,11 @@ class _LoansTabState extends State<LoansTab>
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              isActive ? 'BERJALAN' : 'DIKEMBALIKAN',
+                              isActive
+                                  ? 'BERJALAN'
+                                  : (isEbook
+                                        ? 'SELESAI DIBACA'
+                                        : 'DIKEMBALIKAN'),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -269,9 +385,7 @@ class _LoansTabState extends State<LoansTab>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                isActive
-                                    ? 'Kembali: ${loan['due_date']}'
-                                    : 'Tgl: ${loan['return_date']}',
+                                dateText,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey.shade700,
@@ -295,14 +409,13 @@ class _LoansTabState extends State<LoansTab>
                           MaterialPageRoute(
                             builder: (_) => BookReaderScreen(
                               url: loan['pdf_link'],
-                              title:
-                                  loan['book']['title'] ??
-                                  'E-Book', // ✅ TAMBAHKAN INI
+                              title: loan['book']['title'] ?? 'E-Book',
                               ebookId: loan['ebook_id'].toString(),
                               initialPage: (loan['current_page'] ?? 1),
                             ),
                           ),
                         );
+                        _fetchLoans();
                       },
                       child: const Text("Lanjut Baca"),
                     )
