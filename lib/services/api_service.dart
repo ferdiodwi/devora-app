@@ -126,6 +126,18 @@ class ApiService {
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
 
+  static Future<Map<String, dynamic>> getBookDetail(String id) async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/books/$id'),
+    headers: await _getHeaders(),
+  );
+
+  return {
+    'status': response.statusCode,
+    'data': jsonDecode(response.body)['data'],
+  };
+}
+
   static Future<Map<String, dynamic>> getProfile() async {
     final response = await http.get(
       Uri.parse('$baseUrl/auth/me'),

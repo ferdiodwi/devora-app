@@ -16,12 +16,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   double progress = 0.0;
   int currentPage = 0;
   int totalPage = 0;
+  Map<String, dynamic>? detailBook;
+  bool isLoadingDetail = true;
 
   @override
   void initState() {
     super.initState();
     if (widget.isEbook) {
       fetchProgress();
+    } else {
+      fetchBookDetail();
     }
   }
 
@@ -36,6 +40,17 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         totalPage = res['data']['total_page'] ?? 0;
 
         progress = totalPage == 0 ? 0 : currentPage / totalPage;
+      });
+    }
+  }
+
+  Future<void> fetchBookDetail() async {
+    final res = await ApiService.getBookDetail(widget.book['id'].toString());
+
+    if (res['status'] == 200) {
+      setState(() {
+        detailBook = res['data'];
+        isLoadingDetail = false;
       });
     }
   }
@@ -232,6 +247,87 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         ),
                     ],
                   ),
+                  const SizedBox(height: 32),
+
+                  if (!widget.isEbook &&
+                      detailBook?['copies'] != null &&
+                      detailBook?['copies'].isNotEmpty) ...[
+                    const Text(
+                      'Daftar Eksemplar',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    ...List.generate(detailBook?['copies'].length, (index) {
+                      final copy = detailBook?['copies'][index];
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  copy['copy_code'] ?? '-',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  'Kondisi: ${copy['condition']}',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE7F5EC),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                copy['status'],
+                                style: const TextStyle(
+                                  color: Color(0xFF2B5A41),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
                   const SizedBox(
                     height: 120,
                   ), // padding for floating bottom bar
@@ -241,165 +337,179 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
           ],
         ),
       ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(24.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.isEbook) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Progress Membaca',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+      bottomSheet: widget.isEbook
+          ? Container(
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -10),
                   ),
-                  Text("${(progress * 100).toInt()}%"),
                 ],
               ),
-              const SizedBox(height: 12),
-              LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey.shade200,
-                color: Theme.of(context).colorScheme.primary,
-                minHeight: 6,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              const SizedBox(height: 24),
-            ],
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.isEbook ? 'FORMAT' : 'KETERSEDIAAN',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade500,
-                      ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (widget.isEbook) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Progress Membaca',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text("${(progress * 100).toInt()}%"),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.isEbook
-                          ? 'E-Book Digital'
-                          : '${widget.book['stock'] ?? 0} Copy Fisik',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    const SizedBox(height: 12),
+                    LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: Colors.grey.shade200,
+                      color: Theme.of(context).colorScheme.primary,
+                      minHeight: 6,
+                      borderRadius: BorderRadius.circular(4),
                     ),
+                    const SizedBox(height: 24),
                   ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 20.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (widget.isEbook) {
-                          print(widget.book); // 🔥 debug
-
-                          String? url;
-                          final id = widget.book['id']?.toString() ?? "";
-
-                          // ❌ FILTER: bukan archive valid
-                          if (id.contains('http')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Ebook tidak bisa dibuka (bukan PDF valid)',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          // ❌ FILTER: file audio
-                          if (id.toLowerCase().contains('mp3')) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Ini file audio, bukan ebook PDF',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          // ✅ coba dari formats dulu
-                          final formats = widget.book['formats'];
-                          if (formats != null && formats is Map) {
-                            for (var entry in formats.entries) {
-                              if (entry.key.toString().contains('pdf')) {
-                                url = entry.value.toString();
-                                break;
-                              }
-                            }
-                          }
-
-                          // ✅ fallback archive
-                          if (url == null || url.isEmpty) {
-                            final res = await ApiService.getEbookDetail(id);
-                            url = res['data']['pdf_link'];
-                          }
-
-                          print("FINAL URL: $url");
-
-                          // validasi akhir
-                          if (url != null && url.isNotEmpty) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BookReaderScreen(
-                                  url: url!,
-                                  title: widget.book['title'] ?? '',
-                                  ebookId: id,
-                                ),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('PDF tidak tersedia'),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF679B7B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        elevation: 0,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.isEbook ? 'FORMAT' : 'KETERSEDIAAN',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.isEbook
+                                ? 'E-Book Digital'
+                                : '${widget.book['stock'] ?? 0} Copy Fisik',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        widget.isEbook ? 'Mulai Membaca' : 'Pinjam di Perpus',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      if (widget.isEbook)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 20.0),
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (widget.isEbook) {
+                                  print(widget.book); // 🔥 debug
+
+                                  String? url;
+                                  final id =
+                                      widget.book['id']?.toString() ?? "";
+
+                                  // ❌ FILTER: bukan archive valid
+                                  if (id.contains('http')) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Ebook tidak bisa dibuka (bukan PDF valid)',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  // ❌ FILTER: file audio
+                                  if (id.toLowerCase().contains('mp3')) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Ini file audio, bukan ebook PDF',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  // ✅ coba dari formats dulu
+                                  final formats = widget.book['formats'];
+                                  if (formats != null && formats is Map) {
+                                    for (var entry in formats.entries) {
+                                      if (entry.key.toString().contains(
+                                        'pdf',
+                                      )) {
+                                        url = entry.value.toString();
+                                        break;
+                                      }
+                                    }
+                                  }
+
+                                  // ✅ fallback archive
+                                  if (url == null || url.isEmpty) {
+                                    final res = await ApiService.getEbookDetail(
+                                      id,
+                                    );
+                                    url = res['data']['pdf_link'];
+                                  }
+
+                                  print("FINAL URL: $url");
+
+                                  // validasi akhir
+                                  if (url != null && url.isNotEmpty) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => BookReaderScreen(
+                                          url: url!,
+                                          title: widget.book['title'] ?? '',
+                                          ebookId: id,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('PDF tidak tersedia'),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF679B7B),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                widget.isEbook
+                                    ? 'Mulai Membaca'
+                                    : 'Lihat Koleksi',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+                ],
+              ),
+            )
+          : null,
     );
   }
 
