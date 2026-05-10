@@ -88,6 +88,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     final text = _messageController.text.trim();
     if (text.isEmpty || _isSending) return;
 
+    setState(() {
+      _isSending = true;
+    });
+
     // Jika belum ada conversation, buat dulu
     if (_currentConversationId == null) {
       final res = await ApiService.createConversation();
@@ -98,13 +102,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           _currentTitle = conv['title'];
         });
       } else {
+        setState(() {
+          _isSending = false;
+        });
         return;
       }
     }
 
     _messageController.clear();
     setState(() {
-      _isSending = true;
       _messages.add({
         'role': 'user',
         'message': text,
