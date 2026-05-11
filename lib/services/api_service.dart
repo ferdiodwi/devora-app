@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Hanya membaca dari file .env. URL gagal dimuat jika terjadi masalah dengan file .env
-  static String get baseUrl => dotenv.env['API_URL'] ?? '';
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
