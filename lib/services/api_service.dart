@@ -76,6 +76,40 @@ class ApiService {
     await prefs.remove('auth_token');
   }
 
+  // --- FORGOT PASSWORD --- //
+
+  static Future<Map<String, dynamic>> forgotSendOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/send-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'email': email}),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> forgotVerifyOtp(String email, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/verify-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'email': email, 'otp': otp}),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> forgotResetPassword(String email, String resetToken, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/reset'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'email': email,
+        'reset_token': resetToken,
+        'password': password,
+        'password_confirmation': password,
+      }),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
   // --- CLAIM ACCOUNT --- //
 
   static Future<Map<String, dynamic>> claimLookup(String nisNip) async {

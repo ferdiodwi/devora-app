@@ -5,6 +5,7 @@ import '../services/api_config.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 import 'claim_lookup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -496,8 +497,8 @@ class _LoginScreenState extends State<LoginScreen>
                   _buildInputField(
                     controller: _emailCtrl,
                     focusNode: _emailFocus,
-                    label: 'Email / Username',
-                    hint: 'Masukkan email atau username',
+                    label: 'Email',
+                    hint: 'Masukkan email',
                     prefixIcon: Icons.person_outline_rounded,
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -518,7 +519,7 @@ class _LoginScreenState extends State<LoginScreen>
                   Align(
                     alignment: Alignment.centerRight,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
                       child: const Text(
                         'Lupa Kata Sandi?',
                         style: TextStyle(
