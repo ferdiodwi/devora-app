@@ -88,7 +88,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     final text = _messageController.text.trim();
     if (text.isEmpty || _isSending) return;
 
-    // Jika belum ada conversation, buat dulu
     if (_currentConversationId == null) {
       final res = await ApiService.createConversation();
       if (res['status'] == 201) {
@@ -145,14 +144,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Hapus Percakapan?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Hapus Percakapan?', style: TextStyle(fontWeight: FontWeight.w800)),
         content: const Text('Semua pesan dalam percakapan ini akan dihapus permanen.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
+            child: const Text('Hapus'),
           ),
         ],
       ),
@@ -190,7 +190,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF8),
+      backgroundColor: const Color(0xFFF4F7F5),
       appBar: _buildAppBar(),
       drawer: _buildDrawer(),
       body: Column(
@@ -199,7 +199,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
             child: _currentConversationId == null && _messages.isEmpty
                 ? _buildWelcomeView()
                 : _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF2B5A41)))
                     : _buildMessageList(),
           ),
           _buildInputBar(),
@@ -210,36 +210,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent,
+      backgroundColor: const Color(0xFF2B5A41),
       elevation: 0,
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu_rounded, color: Color(0xFF2B5A41)),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
+      iconTheme: const IconThemeData(color: Colors.white),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2B5A41), Color(0xFF4CAF50)],
-              ),
-              borderRadius: BorderRadius.circular(8),
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Devora AI', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                const Text('Devora AI', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
                 Text(
                   _currentTitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                  style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -250,7 +242,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add_comment_rounded, color: Color(0xFF2B5A41)),
+          icon: const Icon(Icons.add_comment_rounded, color: Colors.white),
           tooltip: 'Chat Baru',
           onPressed: () {
             setState(() {
@@ -261,10 +253,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           },
         ),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(height: 1, color: Colors.grey.shade200),
-      ),
     );
   }
 
@@ -277,7 +265,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2B5A41),
+                borderRadius: BorderRadius.only(bottomRight: Radius.circular(40)),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -286,22 +278,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF2B5A41), Color(0xFF4CAF50)],
-                          ),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      const Text('Devora AI', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                      const Text('Devora AI', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   // New Chat Button
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
                         setState(() {
@@ -310,28 +300,29 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                           _currentTitle = 'Percakapan Baru';
                         });
                       },
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Chat Baru'),
-                      style: OutlinedButton.styleFrom(
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Chat Baru', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF2B5A41),
-                        side: const BorderSide(color: Color(0xFF2B5A41)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(color: Colors.grey.shade200, height: 1),
+            const SizedBox(height: 16),
             // Conversations List
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Text('Riwayat Chat', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade500, letterSpacing: 0.5)),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+              child: Text('Riwayat Chat', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.grey.shade400, letterSpacing: 1)),
             ),
             Expanded(
               child: _isLoadingConversations
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF2B5A41)))
                   : _conversations.isEmpty
                       ? Center(
                           child: Padding(
@@ -339,41 +330,41 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey.shade300),
+                                Icon(Icons.chat_bubble_outline_rounded, size: 48, color: Colors.grey.shade300),
                                 const SizedBox(height: 12),
-                                Text('Belum ada percakapan', style: TextStyle(color: Colors.grey.shade400)),
+                                Text('Belum ada percakapan', style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
                         )
                       : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           itemCount: _conversations.length,
                           itemBuilder: (context, index) {
                             final conv = _conversations[index];
                             final isActive = conv['id'] == _currentConversationId;
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 4),
+                              margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
-                                color: isActive ? const Color(0xFF2B5A41).withOpacity(0.08) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
+                                color: isActive ? const Color(0xFF2B5A41) : Colors.transparent,
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: ListTile(
                                 dense: true,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                 leading: Icon(
-                                  Icons.chat_bubble_outline,
-                                  size: 18,
-                                  color: isActive ? const Color(0xFF2B5A41) : Colors.grey.shade400,
+                                  Icons.chat_bubble_outline_rounded,
+                                  size: 20,
+                                  color: isActive ? Colors.white : Colors.grey.shade400,
                                 ),
                                 title: Text(
                                   conv['title'] ?? 'Percakapan',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                                    color: isActive ? const Color(0xFF2B5A41) : const Color(0xFF1E293B),
+                                    fontSize: 14,
+                                    fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                                    color: isActive ? Colors.white : const Color(0xFF1E293B),
                                   ),
                                 ),
                                 subtitle: conv['last_message'] != null
@@ -381,11 +372,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                                         conv['last_message'],
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                                        style: TextStyle(fontSize: 12, color: isActive ? Colors.white70 : Colors.grey.shade500),
                                       )
                                     : null,
                                 trailing: IconButton(
-                                  icon: Icon(Icons.delete_outline, size: 16, color: Colors.grey.shade400),
+                                  icon: Icon(Icons.delete_outline_rounded, size: 18, color: isActive ? Colors.white70 : Colors.red.shade300),
                                   onPressed: () => _deleteConversation(conv['id']),
                                 ),
                                 onTap: () {
@@ -412,48 +403,44 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           children: [
             // Logo
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2B5A41), Color(0xFF4CAF50)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFF2B5A41).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
+                  BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.1), blurRadius: 30, offset: const Offset(0, 15)),
                 ],
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 48),
+              child: const Icon(Icons.auto_awesome, color: Color(0xFF2B5A41), size: 56),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             const Text(
               'Devora AI',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
             ),
             const SizedBox(height: 8),
             Text(
-              'Asisten Pustakawan Cerdas',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              'Asisten Pustakawan Cerdas Anda',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 40),
             // Suggestion Cards
             _buildSuggestionCard(
-              icon: Icons.search,
-              title: 'Cari Buku',
+              icon: Icons.search_rounded,
+              title: 'Cari Buku Spesifik',
               subtitle: '"Carikan buku tentang sejarah Indonesia"',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildSuggestionCard(
               icon: Icons.star_rounded,
-              title: 'Rekomendasi',
-              subtitle: '"Buku apa yang paling populer?"',
+              title: 'Minta Rekomendasi',
+              subtitle: '"Buku fiksi apa yang paling populer?"',
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             _buildSuggestionCard(
               icon: Icons.category_rounded,
-              title: 'Kategori',
-              subtitle: '"Tampilkan buku kategori fiksi"',
+              title: 'Jelajah Kategori',
+              subtitle: '"Tampilkan buku kategori sains"',
             ),
           ],
         ),
@@ -464,44 +451,42 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   Widget _buildSuggestionCard({required IconData icon, required String title, required String subtitle}) {
     return GestureDetector(
       onTap: () {
-        // Remove quotes from subtitle for the query
         final query = subtitle.replaceAll('"', '');
         _messageController.text = query;
         _sendMessage();
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 5)),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFF2B5A41).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                color: const Color(0xFFF4F7F5),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: const Color(0xFF2B5A41), size: 20),
+              child: Icon(icon, color: const Color(0xFF2B5A41), size: 24),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1E293B))),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1E293B))),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade300),
+            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey.shade300),
           ],
         ),
       ),
@@ -511,7 +496,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   Widget _buildMessageList() {
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
       itemCount: _messages.length + (_isSending ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == _messages.length && _isSending) {
@@ -526,7 +511,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
 
   Widget _buildMessageBubble(Map<String, dynamic> msg, bool isUser) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,38 +519,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           if (!isUser) ...[
             Container(
               margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2B5A41), Color(0xFF4CAF50)],
-                ),
-                borderRadius: BorderRadius.circular(8),
+              padding: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Color(0xFF2B5A41),
+                shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
           ],
           Flexible(
             child: Column(
               crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: BoxDecoration(
                     color: isUser ? const Color(0xFF2B5A41) : Colors.white,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isUser ? 18 : 4),
-                      bottomRight: Radius.circular(isUser ? 4 : 18),
+                      topLeft: const Radius.circular(24),
+                      topRight: const Radius.circular(24),
+                      bottomLeft: Radius.circular(isUser ? 24 : 8),
+                      bottomRight: Radius.circular(isUser ? 8 : 24),
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: isUser
-                            ? const Color(0xFF2B5A41).withOpacity(0.2)
-                            : Colors.black.withOpacity(0.04),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                            ? const Color(0xFF2B5A41).withValues(alpha: 0.15)
+                            : Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
                       ),
                     ],
                   ),
@@ -573,11 +556,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 ),
                 // Book recommendations
                 if (!isUser && msg['books'] != null && (msg['books'] as List).isNotEmpty) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   SizedBox(
-                    height: 140,
+                    height: 180,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
+                      clipBehavior: Clip.none,
                       itemCount: (msg['books'] as List).length,
                       itemBuilder: (context, i) {
                         final book = (msg['books'] as List)[i];
@@ -589,7 +573,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               ],
             ),
           ),
-          if (isUser) const SizedBox(width: 8),
+          if (isUser) const SizedBox(width: 12),
         ],
       ),
     );
@@ -603,7 +587,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
       if (i % 2 != 0 && i < parts.length - 1) {
         spans.add(TextSpan(
           text: parts[i],
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.w800),
         ));
       } else {
         String content = parts[i];
@@ -618,8 +602,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
       text: TextSpan(
         style: TextStyle(
           color: isUser ? Colors.white : const Color(0xFF1E293B),
-          fontSize: 14,
+          fontSize: 15,
           height: 1.5,
+          fontWeight: FontWeight.w500,
         ),
         children: spans,
       ),
@@ -638,14 +623,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
         );
       },
       child: Container(
-        width: 110,
-        margin: const EdgeInsets.only(right: 10),
+        width: 130,
+        margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5)),
           ],
         ),
         child: Column(
@@ -653,13 +637,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           children: [
             // Cover
             Container(
-              height: 75,
+              height: 100,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFF2B5A41).withOpacity(0.08),
+                color: const Color(0xFFF4F7F5),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
                 image: book['cover_image'] != null
                     ? DecorationImage(image: NetworkImage(book['cover_image']), fit: BoxFit.cover)
@@ -667,13 +651,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               ),
               child: book['cover_image'] == null
                   ? Center(
-                      child: Text(initials, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withOpacity(0.3))),
+                      child: Text(initials, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withValues(alpha: 0.2))),
                     )
                   : null,
             ),
             // Info
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -681,14 +665,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, height: 1.2),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.2, color: Color(0xFF1E293B)),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     book['author'] ?? '-',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 9, color: Colors.grey.shade500),
+                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                   ),
                 ],
               ),
@@ -701,43 +685,41 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
 
   Widget _buildTypingIndicator() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             margin: const EdgeInsets.only(top: 4),
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2B5A41), Color(0xFF4CAF50)],
-              ),
-              borderRadius: BorderRadius.circular(8),
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2B5A41),
+              shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 14),
+            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(18),
-                bottomRight: Radius.circular(18),
-                bottomLeft: Radius.circular(4),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+                bottomLeft: Radius.circular(8),
               ),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5)),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildDot(0),
-                const SizedBox(width: 4),
+                const SizedBox(width: 6),
                 _buildDot(1),
-                const SizedBox(width: 4),
+                const SizedBox(width: 6),
                 _buildDot(2),
               ],
             ),
@@ -757,8 +739,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           child: Container(
             width: 8,
             height: 8,
-            decoration: BoxDecoration(
-              color: const Color(0xFF2B5A41).withOpacity(0.5),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2B5A41),
               shape: BoxShape.circle,
             ),
           ),
@@ -769,11 +751,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
 
   Widget _buildInputBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5)),
         ],
       ),
       child: Row(
@@ -781,8 +763,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F4F2),
-                borderRadius: BorderRadius.circular(24),
+                color: const Color(0xFFF4F7F5),
+                borderRadius: BorderRadius.circular(30),
               ),
               child: TextField(
                 controller: _messageController,
@@ -791,31 +773,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 minLines: 1,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _sendMessage(),
+                style: const TextStyle(fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
-                  hintText: 'Tanyakan tentang buku...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                  hintText: 'Tanyakan sesuatu pada Devora...',
+                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14, fontWeight: FontWeight.w500),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           GestureDetector(
             onTap: _isSending ? null : _sendMessage,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: _isSending
-                      ? [Colors.grey.shade300, Colors.grey.shade400]
-                      : [const Color(0xFF2B5A41), const Color(0xFF4CAF50)],
-                ),
-                borderRadius: BorderRadius.circular(16),
+                color: _isSending ? Colors.grey.shade300 : const Color(0xFF2B5A41),
+                shape: BoxShape.circle,
                 boxShadow: _isSending
                     ? []
-                    : [BoxShadow(color: const Color(0xFF2B5A41).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
+                    : [BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
               ),
               child: Icon(
                 _isSending ? Icons.hourglass_top_rounded : Icons.send_rounded,

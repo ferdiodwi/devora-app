@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -75,6 +76,88 @@ class ApiService {
     );
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
+  }
+
+  // --- MEMBER PROFILE --- //
+
+  /// Upload foto avatar ke /member/profile/avatar (multipart)
+  static Future<Map<String, dynamic>> uploadAvatar(File imageFile) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/member/profile/avatar'),
+    );
+    request.headers.addAll({
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    });
+    request.files.add(await http.MultipartFile.fromPath('avatar', imageFile.path));
+
+    final streamed = await request.send();
+    final response = await http.Response.fromStream(streamed);
+    final data = jsonDecode(response.body);
+    return {'status': response.statusCode, 'data': data};
+  }
+
+  /// Update nomor HP
+  static Future<Map<String, dynamic>> updatePhone(String phone) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final response = await http.put(
+      Uri.parse('$baseUrl/member/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'phone': phone}),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  /// Ganti password
+  static Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/member/change-password'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': newPassword,
+      }),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  /// Kirim OTP ke email user yang sedang login
+  static Future<Map<String, dynamic>> sendOtp() async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/member/send-otp'),
+      headers: await _getHeaders(),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  /// Reset password menggunakan OTP
+  static Future<Map<String, dynamic>> resetPasswordWithOtp({
+    required String otp,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/member/reset-password-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'otp': otp,
+        'new_password': newPassword,
+        'new_password_confirmation': newPassword,
+      }),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
 
   // --- CLAIM ACCOUNT --- //

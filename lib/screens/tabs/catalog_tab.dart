@@ -65,7 +65,6 @@ class _CatalogTabState extends State<CatalogTab> {
         _isLoading = false;
         _isLoadingMore = false;
         
-        // Asumsi jika data baru kurang dari 20 (karena limit = 20), maka tidak ada lagi
         if (newBooks.length < 20) {
           _hasMore = false;
         }
@@ -103,7 +102,7 @@ class _CatalogTabState extends State<CatalogTab> {
   }
 
   void _onFilterChanged(String filter) {
-    if (_activeFilter == filter) return; // Ignore if same
+    if (_activeFilter == filter) return;
     setState(() {
       _activeFilter = filter;
     });
@@ -112,16 +111,24 @@ class _CatalogTabState extends State<CatalogTab> {
 
   Widget _buildFilterChip(String label) {
     final isSelected = _activeFilter == label;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => _onFilterChanged(label),
-      selectedColor: const Color(0xFF2B5A41),
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black87,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (_) => _onFilterChanged(label),
+        selectedColor: const Color(0xFF2B5A41),
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : const Color(0xFF1E293B),
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+        ),
+        backgroundColor: Colors.white,
+        side: BorderSide(
+          color: isSelected ? const Color(0xFF2B5A41) : Colors.grey.shade300,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: isSelected ? 2 : 0,
       ),
-      backgroundColor: Colors.grey.shade200,
     );
   }
 
@@ -130,31 +137,64 @@ class _CatalogTabState extends State<CatalogTab> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7FAF8),
-        appBar: AppBar(
-          title: const Text('Katalog', style: TextStyle(fontWeight: FontWeight.bold)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          actions: const [
-            NotificationBell(),
-            SizedBox(width: 4),
-          ],
-          bottom: const TabBar(
-            labelColor: Color(0xFF2B5A41),
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Color(0xFF2B5A41),
-            labelStyle: TextStyle(fontWeight: FontWeight.bold),
-            tabs: [
-              Tab(text: 'Buku Fisik'),
-              Tab(text: 'E-Book'),
+        backgroundColor: const Color(0xFFF4F7F5),
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                backgroundColor: const Color(0xFF2B5A41),
+                expandedHeight: 120,
+                floating: true,
+                pinned: true,
+                elevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                ),
+                flexibleSpace: const FlexibleSpaceBar(
+                  titlePadding: EdgeInsets.only(left: 20, bottom: 60),
+                  title: Text(
+                    'Eksplorasi Katalog',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 20,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+                actions: const [
+                  NotificationBell(),
+                  SizedBox(width: 8),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(50),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+                    ),
+                    child: const TabBar(
+                      indicatorColor: Colors.white,
+                      indicatorWeight: 3,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white70,
+                      labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      tabs: [
+                        Tab(text: 'Buku Fisik'),
+                        Tab(text: 'E-Book'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ];
+          },
+          body: TabBarView(
+            children: [
+              _buildPhysicalBookView(),
+              const EbookTab(),
             ],
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildPhysicalBookView(),
-            const EbookTab(),
-          ],
         ),
       ),
     );
@@ -163,34 +203,37 @@ class _CatalogTabState extends State<CatalogTab> {
   Widget _buildPhysicalBookView() {
     return Column(
       children: [
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+        // Floating Search & Filter Bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                onChanged: _filterBooks,
-                decoration: InputDecoration(
-                  hintText: 'Cari judul buku atau penulis...',
-                  prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                  fillColor: const Color(0xFFF7FAF8),
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))
+                  ],
+                ),
+                child: TextField(
+                  onChanged: _filterBooks,
+                  decoration: InputDecoration(
+                    hintText: 'Cari judul buku atau penulis...',
+                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF2B5A41)),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
                     _buildFilterChip('Semua'),
-                    const SizedBox(width: 8),
                     _buildFilterChip('Terbaru'),
-                    const SizedBox(width: 8),
                     _buildFilterChip('Populer'),
                   ],
                 ),
@@ -198,11 +241,21 @@ class _CatalogTabState extends State<CatalogTab> {
             ],
           ),
         ),
+        
         Expanded(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator(color: Color(0xFF2B5A41)))
               : _books.isEmpty
-                  ? const Center(child: Text('Tidak ada buku ditemukan.'))
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.menu_book_rounded, size: 64, color: Colors.grey.shade300),
+                          const SizedBox(height: 16),
+                          Text('Tidak ada buku ditemukan.', style: TextStyle(color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    )
                   : Stack(
                       children: [
                         RefreshIndicator(
@@ -211,7 +264,7 @@ class _CatalogTabState extends State<CatalogTab> {
                           child: GridView.builder(
                             controller: _scrollController,
                             physics: const AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: _isLoadingMore ? 80 : 16),
+                            padding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: _isLoadingMore ? 80 : 20),
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.58,
@@ -234,9 +287,9 @@ class _CatalogTabState extends State<CatalogTab> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
-                                      BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5))
+                                      BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 8))
                                     ],
                                   ),
                                   child: Column(
@@ -245,8 +298,8 @@ class _CatalogTabState extends State<CatalogTab> {
                                       Expanded(
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.shade200,
-                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                            color: const Color(0xFFF4F7F5),
+                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                                             image: book['cover_image'] != null
                                                 ? DecorationImage(
                                                     image: NetworkImage(book['cover_image']),
@@ -258,7 +311,7 @@ class _CatalogTabState extends State<CatalogTab> {
                                             ? Center(
                                                 child: Text(
                                                   initials,
-                                                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withOpacity(0.3)),
+                                                  style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withValues(alpha: 0.1)),
                                                 ),
                                               ) 
                                             : null,
@@ -273,14 +326,14 @@ class _CatalogTabState extends State<CatalogTab> {
                                               book['title'] ?? 'Tanpa Judul',
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1E293B)),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
                                               book['author'] ?? '-',
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                              style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
                                             ),
                                           ],
                                         ),

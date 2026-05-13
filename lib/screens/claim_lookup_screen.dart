@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../widgets/custom_text_field.dart';
 import 'claim_activate_screen.dart';
 
 class ClaimLookupScreen extends StatefulWidget {
@@ -9,24 +10,45 @@ class ClaimLookupScreen extends StatefulWidget {
   State<ClaimLookupScreen> createState() => _ClaimLookupScreenState();
 }
 
-class _ClaimLookupScreenState extends State<ClaimLookupScreen> {
+class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTickerProviderStateMixin {
   final _nisNipCtrl = TextEditingController();
   bool _isLoading = false;
+  String? _errorMsg;
+
+  late AnimationController _shakeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    _nisNipCtrl.dispose();
+    super.dispose();
+  }
 
   void _lookup() async {
-    if (_nisNipCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan NIS atau NIP Anda')),
-      );
+    setState(() => _errorMsg = null);
+
+    if (_nisNipCtrl.text.trim().isEmpty) {
+      setState(() => _errorMsg = 'Masukkan NIS atau NIP Anda');
+      _shakeController.forward(from: 0);
       return;
     }
 
     setState(() => _isLoading = true);
-    final res = await ApiService.claimLookup(_nisNipCtrl.text);
+    final res = await ApiService.claimLookup(_nisNipCtrl.text.trim());
     setState(() => _isLoading = false);
 
     if (res['status'] == 200) {
       final memberData = res['data']['data'];
+      if (!mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -34,52 +56,205 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> {
         ),
       );
     } else {
-      String msg = res['data']['message'] ?? 'Data tidak ditemukan';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+      setState(() {
+        _errorMsg = res['data']['message'] ?? 'Data tidak ditemukan';
+      });
+      _shakeController.forward(from: 0);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Aktivasi Akun Anggota')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: const Color(0xFFF4F7F5),
+      body: SingleChildScrollView(
+        child: Stack(
           children: [
-            const Icon(Icons.badge, size: 64, color: Colors.deepPurple),
-            const SizedBox(height: 16),
-            const Text(
-              'Masukkan Nomor Induk',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Masukkan NIS (untuk Siswa) atau NIP (untuk Guru/Karyawan) yang telah didaftarkan oleh sekolah.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: _nisNipCtrl,
-              decoration: const InputDecoration(
-                labelText: 'NIS / NIP',
-                border: OutlineInputBorder(),
+            // ─── GREEN HEADER BACKGROUND ─────────────────────────
+            Container(
+              height: size.height * 0.35,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2B5A41),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
+                ),
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _lookup,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const SizedBox(height: 10),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          'Aktivasi\nAkun Anggota',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          'Khusus Siswa dan Guru SMAN 4 Jember.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Cari Data Saya', style: TextStyle(fontSize: 16)),
+            ),
+
+            // ─── FLOATING CARD ─────────────────────────────
+            Padding(
+              padding: EdgeInsets.only(
+                top: size.height * 0.28,
+                left: 20,
+                right: 20,
+                bottom: 40,
+              ),
+              child: AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(
+                      _shakeController.isAnimating
+                          ? 10 * ((_shakeController.value * 5) % 2 < 1 ? 1 : -1)
+                          : 0,
+                      0,
+                    ),
+                    child: child,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B5A41).withValues(alpha: 0.08),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.info_outline_rounded, color: Color(0xFF2B5A41)),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Masukkan NIS (untuk Siswa) atau NIP (untuk Guru) yang terdaftar di sekolah.',
+                                style: TextStyle(fontSize: 13, color: Color(0xFF333333), height: 1.4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      if (_errorMsg != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF0F0),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline, color: Color(0xFFE53935), size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _errorMsg!,
+                                  style: const TextStyle(
+                                      color: Color(0xFFE53935),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      CustomTextField(
+                        label: 'Nomor Induk (NIS/NIP)',
+                        hint: 'Masukkan nomor induk Anda',
+                        controller: _nisNipCtrl,
+                        prefixIcon: Icons.badge_outlined,
+                        keyboardType: TextInputType.number,
+                        onChanged: () => setState(() => _errorMsg = null),
+                      ),
+                      const SizedBox(height: 32),
+
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _lookup,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2B5A41),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Cari Data Saya', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.search_rounded, size: 20),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
