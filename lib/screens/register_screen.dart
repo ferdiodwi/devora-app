@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_text_field.dart';
 import 'home_screen.dart';
@@ -334,7 +335,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

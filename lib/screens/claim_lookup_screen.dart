@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_text_field.dart';
 import 'claim_activate_screen.dart';
@@ -33,6 +34,47 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
     super.dispose();
   }
 
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  // Design tokens
+  static const _primary = Color(0xFF1A3C2A);
+  static const _primaryLight = Color(0xFF2B5A41);
+  static const _accent = Color(0xFFD4E8D9);
+  static const _surface = Color(0xFFF6F8F7);
+  static const _inputBg = Color(0xFFF1F4F2);
+  static const _textPrimary = Color(0xFF1A1D1B);
+  static const _textSecondary = Color(0xFF6B7770);
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOutCubic,
+    ));
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _nisNipCtrl.dispose();
+    super.dispose();
+  }
+
   void _lookup() async {
     setState(() => _errorMsg = null);
 
@@ -61,6 +103,17 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
       });
       _shakeController.forward(from: 0);
     }
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade400 : _primaryLight,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -256,7 +309,7 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

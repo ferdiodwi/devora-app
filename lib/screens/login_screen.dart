@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_text_field.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
 import 'claim_lookup_screen.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -105,6 +109,90 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
       _shake();
     }
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required String label,
+    required String hint,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    bool isPassword = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: _textPrimary,
+            letterSpacing: 0.1,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          focusNode: focusNode,
+          keyboardType: keyboardType,
+          obscureText: isPassword ? _obscurePassword : false,
+          style: const TextStyle(
+            fontSize: 16,
+            color: _textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+          cursorColor: _primaryLight,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
+            ),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 12),
+              child: Icon(prefixIcon, color: _textSecondary, size: 22),
+            ),
+            prefixIconConstraints:
+                const BoxConstraints(minWidth: 0, minHeight: 0),
+            suffixIcon: isPassword
+                ? Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: _textSecondary,
+                        size: 22,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  )
+                : null,
+            filled: true,
+            fillColor: _inputBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: Color(0xFFE8ECE9), width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: _primaryLight, width: 1.5),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          ),
+        ),
+      ],
+    );
   }
 
   @override

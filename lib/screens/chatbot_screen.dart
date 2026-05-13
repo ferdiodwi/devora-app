@@ -97,13 +97,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           _currentTitle = conv['title'];
         });
       } else {
+        setState(() {
+          _isSending = false;
+        });
         return;
       }
     }
 
     _messageController.clear();
     setState(() {
-      _isSending = true;
       _messages.add({
         'role': 'user',
         'message': text,
