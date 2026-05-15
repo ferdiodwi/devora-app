@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -154,6 +154,40 @@ class ApiService {
         'otp': otp,
         'new_password': newPassword,
         'new_password_confirmation': newPassword,
+      }),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  // --- FORGOT PASSWORD --- //
+
+  static Future<Map<String, dynamic>> forgotSendOtp(String email) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/send-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'email': email}),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> forgotVerifyOtp(String email, String otp) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/verify-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'email': email, 'otp': otp}),
+    );
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> forgotResetPassword(String email, String resetToken, String password) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/forgot-password/reset'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'email': email,
+        'reset_token': resetToken,
+        'password': password,
+        'password_confirmation': password,
       }),
     );
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};

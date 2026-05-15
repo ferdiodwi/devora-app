@@ -335,7 +335,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

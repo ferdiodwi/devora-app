@@ -346,7 +346,7 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen> with SingleTi
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../widgets/custom_text_field.dart';
 import 'verify_otp_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -14,50 +15,41 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     with SingleTickerProviderStateMixin {
   final _emailCtrl = TextEditingController();
   bool _isLoading = false;
+  String? _emailError;
+  String? _generalError;
 
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  static const _primary = Color(0xFF1A3C2A);
-  static const _primaryLight = Color(0xFF2B5A41);
-  static const _accent = Color(0xFFD4E8D9);
-  static const _surface = Color(0xFFF6F8F7);
-  static const _inputBg = Color(0xFFF1F4F2);
-  static const _textPrimary = Color(0xFF1A1D1B);
-  static const _textSecondary = Color(0xFF6B7770);
+  late AnimationController _shakeController;
 
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+    _shakeController = AnimationController(
       vsync: this,
+      duration: const Duration(milliseconds: 500),
     );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOutCubic,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOutCubic,
-    ));
-    _fadeController.forward();
   }
 
   @override
   void dispose() {
-    _fadeController.dispose();
+    _shakeController.dispose();
     _emailCtrl.dispose();
     super.dispose();
   }
 
+  void _clearErrors() {
+    if (_emailError != null || _generalError != null) {
+      setState(() {
+        _emailError = null;
+        _generalError = null;
+      });
+    }
+  }
+
   void _sendOtp() async {
+    _clearErrors();
     if (_emailCtrl.text.trim().isEmpty) {
-      _showSnackBar('Masukkan email Anda', isError: true);
+      setState(() => _emailError = 'Email tidak boleh kosong');
+      _shakeController.forward(from: 0);
       return;
     }
 
@@ -67,7 +59,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
     setState(() => _isLoading = false);
 
     if (res['status'] == 200) {
-      _showSnackBar(res['data']['message'] ?? 'OTP terkirim');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['data']['message'] ?? 'OTP terkirim'),
+          backgroundColor: const Color(0xFF2B5A41),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -75,214 +74,203 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
         ),
       );
     } else {
-      _showSnackBar(res['data']['message'] ?? 'Gagal mengirim OTP', isError: true);
+      setState(() {
+        _generalError = res['data']['message'] ?? 'Gagal mengirim OTP';
+      });
+      _shakeController.forward(from: 0);
     }
-  }
-
-  void _showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red.shade400 : _primaryLight,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ));
+    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              children: [
-                // AppBar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Row(
+      backgroundColor: const Color(0xFFF4F7F5),
+      body: SingleChildScrollView(
+        child: Stack(
+          children: [
+            // ─── GREEN HEADER BACKGROUND ─────────────────────────
+            Container(
+              height: size.height * 0.35,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF2B5A41),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+                        ),
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        color: _textPrimary,
-                        style: IconButton.styleFrom(
-                          backgroundColor: _surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      ),
+                      const SizedBox(height: 10),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          'Lupa Kata\nSandi?',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            height: 1.2,
                           ),
                         ),
                       ),
-                      const Spacer(),
-                      Text(
-                        'Lupa Kata Sandi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: _textPrimary,
-                          letterSpacing: -0.2,
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          'Kami akan mengirimkan kode OTP ke email Anda.',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 15,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      const SizedBox(width: 48),
                     ],
                   ),
                 ),
+              ),
+            ),
 
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    child: Column(
-                      children: [
-                        const Spacer(flex: 2),
-
-                        // Icon
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: _accent.withOpacity(0.4),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.lock_reset_rounded,
-                            size: 48,
-                            color: _primaryLight,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-
-                        const Text(
-                          'Reset Password',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
-                            color: _textPrimary,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Masukkan email yang terdaftar.\nKami akan mengirimkan kode OTP\nke email Anda.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: _textSecondary,
-                            height: 1.6,
-                          ),
-                        ),
-                        const SizedBox(height: 36),
-
-                        // Email field
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Email',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: _textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            TextField(
-                              controller: _emailCtrl,
-                              keyboardType: TextInputType.emailAddress,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: _textPrimary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              cursorColor: _primaryLight,
-                              decoration: InputDecoration(
-                                hintText: 'Masukkan alamat email',
-                                hintStyle: TextStyle(
-                                  color: Colors.grey.shade400,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 15,
-                                ),
-                                prefixIcon: const Padding(
-                                  padding: EdgeInsets.only(left: 16, right: 12),
-                                  child: Icon(Icons.email_outlined, color: _textSecondary, size: 22),
-                                ),
-                                prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-                                filled: true,
-                                fillColor: _inputBg,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: BorderSide.none,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: Color(0xFFE8ECE9), width: 1),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                  borderSide: const BorderSide(color: _primaryLight, width: 1.5),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 28),
-
-                        // Send OTP button
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton.icon(
-                            onPressed: _isLoading ? null : _sendOtp,
-                            icon: _isLoading
-                                ? const SizedBox.shrink()
-                                : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                            label: _isLoading
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2.5,
-                                    ),
-                                  )
-                                : const Text(
-                                    'Kirim Kode OTP',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _primary,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: _primary.withOpacity(0.6),
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const Spacer(flex: 3),
-                      ],
+            // ─── FLOATING CARD ─────────────────────────────
+            Padding(
+              padding: EdgeInsets.only(
+                top: size.height * 0.28,
+                left: 20,
+                right: 20,
+                bottom: 40,
+              ),
+              child: AnimatedBuilder(
+                animation: _shakeController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(
+                      _shakeController.isAnimating
+                          ? 10 * ((_shakeController.value * 5) % 2 < 1 ? 1 : -1)
+                          : 0,
+                      0,
                     ),
+                    child: child,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF2B5A41).withValues(alpha: 0.08),
+                        blurRadius: 30,
+                        offset: const Offset(0, 15),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Icon badge
+                      Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F1EC),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(Icons.lock_reset_rounded, color: Color(0xFF2B5A41), size: 36),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      if (_generalError != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF0F0),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error_outline, color: Color(0xFFE53935), size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _generalError!,
+                                  style: const TextStyle(
+                                      color: Color(0xFFE53935),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // Email field
+                      CustomTextField(
+                        label: 'Alamat Email',
+                        hint: 'Masukkan email yang terdaftar',
+                        controller: _emailCtrl,
+                        prefixIcon: Icons.alternate_email_rounded,
+                        keyboardType: TextInputType.emailAddress,
+                        errorText: _emailError,
+                        onChanged: _clearErrors,
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Send OTP button
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _sendOtp,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2B5A41),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Kirim Kode OTP',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.send_rounded, size: 20),
+                                ],
+                              ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
