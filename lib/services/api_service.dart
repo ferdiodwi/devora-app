@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-import 'api_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_config.dart';
 
 class ApiService {
+  // Hanya membaca dari file .env. URL gagal dimuat jika terjadi masalah dengan file .env
   static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<Map<String, String>> _getHeaders() async {
@@ -92,7 +93,9 @@ class ApiService {
       'Accept': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     });
-    request.files.add(await http.MultipartFile.fromPath('avatar', imageFile.path));
+    request.files.add(
+      await http.MultipartFile.fromPath('avatar', imageFile.path),
+    );
 
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
@@ -170,7 +173,10 @@ class ApiService {
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
 
-  static Future<Map<String, dynamic>> forgotVerifyOtp(String email, String otp) async {
+  static Future<Map<String, dynamic>> forgotVerifyOtp(
+    String email,
+    String otp,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/forgot-password/verify-otp'),
       headers: await _getHeaders(),
@@ -179,7 +185,11 @@ class ApiService {
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
 
-  static Future<Map<String, dynamic>> forgotResetPassword(String email, String resetToken, String password) async {
+  static Future<Map<String, dynamic>> forgotResetPassword(
+    String email,
+    String resetToken,
+    String password,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/auth/forgot-password/reset'),
       headers: await _getHeaders(),
@@ -204,13 +214,13 @@ class ApiService {
     return {'status': response.statusCode, 'data': jsonDecode(response.body)};
   }
 
-  static Future<Map<String, dynamic>> claimActivate({
+  static Future<Map<String, dynamic>> claimActivateSendOtp({
     required int memberId,
     required String email,
     required String password,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/auth/claim-activate'),
+      Uri.parse('$baseUrl/auth/claim-activate/send-otp'),
       headers: await _getHeaders(),
       body: jsonEncode({
         'member_id': memberId,
@@ -220,15 +230,35 @@ class ApiService {
       }),
     );
 
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> claimActivateVerifyOtp({
+    required int memberId,
+    required String email,
+    required String otp,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/claim-activate/verify-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'member_id': memberId, 'email': email, 'otp': otp}),
+    );
+
     final data = jsonDecode(response.body);
+
     if (response.statusCode == 200) {
       await _saveToken(data);
     }
+
     return {'status': response.statusCode, 'data': data};
   }
   // --- APP FEATURES --- //
 
-  static Future<Map<String, dynamic>> getBooks({int page = 1, String q = '', String sort = ''}) async {
+  static Future<Map<String, dynamic>> getBooks({
+    int page = 1,
+    String q = '',
+    String sort = '',
+  }) async {
     final queryParams = <String>[];
     queryParams.add('page=$page');
     if (q.isNotEmpty) queryParams.add('q=$q');
@@ -243,16 +273,16 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getBookDetail(String id) async {
-  final response = await http.get(
-    Uri.parse('$baseUrl/books/$id'),
-    headers: await _getHeaders(),
-  );
+    final response = await http.get(
+      Uri.parse('$baseUrl/books/$id'),
+      headers: await _getHeaders(),
+    );
 
-  return {
-    'status': response.statusCode,
-    'data': jsonDecode(response.body)['data'],
-  };
-}
+    return {
+      'status': response.statusCode,
+      'data': jsonDecode(response.body)['data'],
+    };
+  }
 
   static Future<Map<String, dynamic>> getProfile() async {
     final response = await http.get(

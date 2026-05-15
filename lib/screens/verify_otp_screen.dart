@@ -14,8 +14,10 @@ class VerifyOtpScreen extends StatefulWidget {
 
 class _VerifyOtpScreenState extends State<VerifyOtpScreen>
     with SingleTickerProviderStateMixin {
-  final List<TextEditingController> _otpCtrls =
-      List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpCtrls = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _otpFocuses = List.generate(6, (_) => FocusNode());
   bool _isLoading = false;
   bool _isResending = false;
@@ -67,10 +69,8 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => ResetPasswordScreen(
-            email: widget.email,
-            resetToken: resetToken,
-          ),
+          builder: (_) =>
+              ResetPasswordScreen(email: widget.email, resetToken: resetToken),
         ),
       );
     } else {
@@ -93,7 +93,9 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
           content: const Text('Kode OTP baru telah dikirim'),
           backgroundColor: const Color(0xFF2B5A41),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       for (var c in _otpCtrls) {
@@ -106,7 +108,9 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
           content: Text(res['data']['message'] ?? 'Gagal mengirim ulang'),
           backgroundColor: Colors.red.shade400,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -134,7 +138,10 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 10,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -145,7 +152,11 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                             color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 18,
+                            color: Colors.white,
+                          ),
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
@@ -166,7 +177,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          'Cek email masuk Anda.',
+                          'Cek WhatsApp yang terdaftar pada akun Anda.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 15,
@@ -232,18 +243,32 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                                 color: Color(0xFF2B5A41),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.mark_email_read_rounded, color: Colors.white, size: 20),
+                              child: const Icon(
+                                Icons.chat_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Kode dikirim ke:', style: TextStyle(fontSize: 12, color: Color(0xFF4A7D60))),
+                                  const Text(
+                                    'Akun reset password:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF4A7D60),
+                                    ),
+                                  ),
                                   const SizedBox(height: 2),
                                   Text(
                                     widget.email,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2B5A41)),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF2B5A41),
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -265,15 +290,20 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: Color(0xFFE53935), size: 20),
+                              const Icon(
+                                Icons.error_outline,
+                                color: Color(0xFFE53935),
+                                size: 20,
+                              ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   _generalError!,
                                   style: const TextStyle(
-                                      color: Color(0xFFE53935),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600),
+                                    color: Color(0xFFE53935),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ],
@@ -336,18 +366,30 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFF2B5A41), width: 2),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2B5A41),
+                                    width: 2,
+                                  ),
                                 ),
-                                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                               ),
                               onChanged: (value) {
                                 // Handle paste
                                 if (value.length > 1) {
-                                  final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+                                  final digits = value.replaceAll(
+                                    RegExp(r'[^0-9]'),
+                                    '',
+                                  );
                                   for (int j = 0; j < 6; j++) {
-                                    _otpCtrls[j].text = j < digits.length ? digits[j] : '';
+                                    _otpCtrls[j].text = j < digits.length
+                                        ? digits[j]
+                                        : '';
                                   }
-                                  final focusIdx = digits.length >= 6 ? 5 : digits.length;
+                                  final focusIdx = digits.length >= 6
+                                      ? 5
+                                      : digits.length;
                                   if (focusIdx < 6) {
                                     _otpFocuses[focusIdx].requestFocus();
                                   }
@@ -385,13 +427,22 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                             ? const SizedBox(
                                 height: 24,
                                 width: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                             : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Verifikasi',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                                  Text(
+                                    'Verifikasi',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
                                   SizedBox(width: 8),
                                   Icon(Icons.verified_rounded, size: 20),
                                 ],
@@ -412,7 +463,9 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen>
                               ),
                               children: [
                                 TextSpan(
-                                  text: _isResending ? 'Mengirim...' : 'Kirim Ulang',
+                                  text: _isResending
+                                      ? 'Mengirim...'
+                                      : 'Kirim Ulang',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w700,

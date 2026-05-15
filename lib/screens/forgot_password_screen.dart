@@ -135,7 +135,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          'Kami akan mengirimkan kode OTP ke email Anda.',
+                          'Kami akan mengirimkan kode OTP ke WhatsApp yang terdaftar.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 15,

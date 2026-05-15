@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
-import '../widgets/custom_text_field.dart';
-import 'claim_verify_otp_screen.dart';
+import 'home_screen.dart';
 
-class ClaimActivateScreen extends StatefulWidget {
-  final Map<String, dynamic> memberData;
+class ClaimVerifyOtpScreen extends StatefulWidget {
+  final int memberId;
+  final String email;
+  final String password;
 
-  const ClaimActivateScreen({super.key, required this.memberData});
+  const ClaimVerifyOtpScreen({
+    super.key,
+    required this.memberId,
+    required this.email,
+    required this.password,
+  });
 
   @override
-  State<ClaimActivateScreen> createState() => _ClaimActivateScreenState();
+  State<ClaimVerifyOtpScreen> createState() => _ClaimVerifyOtpScreenState();
 }
 
-class _ClaimActivateScreenState extends State<ClaimActivateScreen>
+class _ClaimVerifyOtpScreenState extends State<ClaimVerifyOtpScreen>
     with SingleTickerProviderStateMixin {
-  final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _isLoading = false;
-  bool _obscurePassword = true;
+  final List<TextEditingController> _otpCtrls =
+      List.generate(6, (_) => TextEditingController());
+  final List<FocusNode> _otpFocuses = List.generate(6, (_) => FocusNode());
 
-  String? _emailError;
-  String? _passwordError;
+  bool _isLoading = false;
+  bool _isResending = false;
   String? _generalError;
 
   late AnimationController _shakeController;
@@ -37,56 +43,35 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
   @override
   void dispose() {
     _shakeController.dispose();
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
+    for (final c in _otpCtrls) {
+      c.dispose();
+    }
+    for (final f in _otpFocuses) {
+      f.dispose();
+    }
     super.dispose();
   }
 
-  void _clearErrors() {
-    if (_emailError != null ||
-        _passwordError != null ||
-        _generalError != null) {
-      setState(() {
-        _emailError = null;
-        _passwordError = null;
-        _generalError = null;
-      });
-    }
-  }
+  String get _otpCode => _otpCtrls.map((c) => c.text).join();
 
-  void _activate() async {
-    _clearErrors();
-    bool hasError = false;
+  void _verifyOtp() async {
+    final otp = _otpCode;
 
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
-
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-
-    if (email.isEmpty) {
-      setState(() => _emailError = 'Email wajib diisi');
-      hasError = true;
-    } else if (!emailRegex.hasMatch(email)) {
-      setState(() => _emailError = 'Format email tidak valid');
-      hasError = true;
-    }
-
-    if (password.length < 6) {
-      setState(() => _passwordError = 'Minimal 6 karakter');
-      hasError = true;
-    }
-
-    if (hasError) {
+    if (otp.length != 6) {
+      setState(() => _generalError = 'Masukkan 6 digit kode OTP');
       _shakeController.forward(from: 0);
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _generalError = null;
+    });
 
-    final res = await ApiService.claimActivateSendOtp(
-      memberId: widget.memberData['id'],
-      email: email,
-      password: password,
+    final res = await ApiService.claimActivateVerifyOtp(
+      memberId: widget.memberId,
+      email: widget.email,
+      otp: otp,
     );
 
     if (!mounted) return;
@@ -95,60 +80,75 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
     if (res['status'] == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            res['data']['message'] ?? 'Kode OTP telah dikirim ke email',
-          ),
+          content: Text(res['data']['message'] ?? 'Akun berhasil diaktivasi'),
           backgroundColor: const Color(0xFF2B5A41),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
 
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (_) => ClaimVerifyOtpScreen(
-            memberId: widget.memberData['id'],
-            email: email,
-            password: password,
-          ),
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    } else {
+      setState(() {
+        _generalError = res['data']['message'] ?? 'OTP tidak valid';
+      });
+      _shakeController.forward(from: 0);
+    }
+  }
+
+  void _resendOtp() async {
+    setState(() {
+      _isResending = true;
+      _generalError = null;
+    });
+
+    final res = await ApiService.claimActivateSendOtp(
+      memberId: widget.memberId,
+      email: widget.email,
+      password: widget.password,
+    );
+
+    if (!mounted) return;
+    setState(() => _isResending = false);
+
+    if (res['status'] == 200) {
+      for (final c in _otpCtrls) {
+        c.clear();
+      }
+      _otpFocuses[0].requestFocus();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['data']['message'] ?? 'Kode OTP baru telah dikirim'),
+          backgroundColor: const Color(0xFF2B5A41),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     } else {
-      final data = res['data'];
-
-      if (res['status'] == 422 && data['errors'] != null) {
-        setState(() {
-          final errors = data['errors'] as Map;
-          if (errors.containsKey('email')) {
-            _emailError = errors['email'][0];
-          }
-          if (errors.containsKey('password')) {
-            _passwordError = errors['password'][0];
-          }
-        });
-      } else {
-        setState(() {
-          _generalError = data['message'] ?? 'Gagal mengirim OTP aktivasi.';
-        });
-      }
-
-      _shakeController.forward(from: 0);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['data']['message'] ?? 'Gagal mengirim ulang OTP'),
+          backgroundColor: Colors.red.shade400,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Buat Akun Perpus')),
+      backgroundColor: const Color(0xFFF4F7F5),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
             Container(
               height: size.height * 0.35,
@@ -162,10 +162,7 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 10,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -188,7 +185,7 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          'Data\nDitemukan',
+                          'Verifikasi\nAktivasi',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 34,
@@ -201,7 +198,7 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          'Satu langkah lagi untuk aktivasi akun.',
+                          'Masukkan kode OTP yang dikirim ke email Anda.',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 15,
@@ -214,7 +211,6 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
               ),
             ),
 
-            // ─── FLOATING CARD ─────────────────────────────
             Padding(
               padding: EdgeInsets.only(
                 top: size.height * 0.28,
@@ -251,9 +247,8 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // User Info Badge
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE8F1EC),
                           borderRadius: BorderRadius.circular(16),
@@ -262,40 +257,39 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(10),
+                              padding: const EdgeInsets.all(8),
                               decoration: const BoxDecoration(
                                 color: Color(0xFF2B5A41),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.person,
+                                Icons.mark_email_read_rounded,
                                 color: Colors.white,
-                                size: 24,
+                                size: 20,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const Text(
+                                    'Kode dikirim ke:',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF4A7D60),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    widget.memberData['name'],
+                                    widget.email,
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF2B5A41),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${widget.memberData['type'].toString().toUpperCase()} - ${widget.memberData['nis_nip']}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF4A7D60),
-                                      fontWeight: FontWeight.w600,
-                                    ),
                                   ),
                                 ],
                               ),
@@ -303,6 +297,7 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                           ],
                         ),
                       ),
+
                       const SizedBox(height: 24),
 
                       if (_generalError != null) ...[
@@ -337,51 +332,67 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                         const SizedBox(height: 20),
                       ],
 
-                      CustomTextField(
-                        label: 'Email Login',
-                        hint: 'Buat email untuk login',
-                        controller: _emailCtrl,
-                        prefixIcon: Icons.alternate_email_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                        errorText: _emailError,
-                        onChanged: _clearErrors,
-                      ),
-                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: List.generate(6, (index) {
+                          return SizedBox(
+                            width: 45,
+                            child: TextField(
+                              controller: _otpCtrls[index],
+                              focusNode: _otpFocuses[index],
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              maxLength: 1,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2B5A41),
+                              ),
+                              decoration: InputDecoration(
+                                counterText: '',
+                                filled: true,
+                                fillColor: const Color(0xFFF4F7F5),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFCBEAD7),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF2B5A41),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                setState(() => _generalError = null);
 
-                      const Text(
-                        'Kata Sandi',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF333333),
-                        ),
+                                if (value.isNotEmpty && index < 5) {
+                                  _otpFocuses[index + 1].requestFocus();
+                                }
+
+                                if (value.isEmpty && index > 0) {
+                                  _otpFocuses[index - 1].requestFocus();
+                                }
+
+                                if (_otpCode.length == 6) {
+                                  FocusScope.of(context).unfocus();
+                                }
+                              },
+                            ),
+                          );
+                        }),
                       ),
-                      const SizedBox(height: 8),
-                      CustomTextField(
-                        label: '',
-                        hint: 'Minimal 6 karakter',
-                        controller: _passwordCtrl,
-                        prefixIcon: Icons.lock_outline_rounded,
-                        obscureText: _obscurePassword,
-                        errorText: _passwordError,
-                        onChanged: _clearErrors,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: Colors.grey.shade400,
-                            size: 22,
-                          ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
-                        ),
-                      ),
+
                       const SizedBox(height: 32),
 
                       ElevatedButton(
-                        onPressed: _isLoading ? null : _activate,
+                        onPressed: _isLoading ? null : _verifyOtp,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2B5A41),
                           foregroundColor: Colors.white,
@@ -404,16 +415,46 @@ class _ClaimActivateScreenState extends State<ClaimActivateScreen>
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    'Kirim OTP Aktivasi',
+                                    'Verifikasi Aktivasi',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.5,
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Icon(Icons.mark_email_read_rounded, size: 20),
+                                  Icon(Icons.verified_rounded, size: 20),
                                 ],
                               ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Center(
+                        child: GestureDetector(
+                          onTap: _isResending ? null : _resendOtp,
+                          child: RichText(
+                            text: TextSpan(
+                              text: 'Tidak menerima kode? ',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade500,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: _isResending ? 'Mengirim...' : 'Kirim Ulang',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: _isResending
+                                        ? Colors.grey.shade400
+                                        : const Color(0xFF2B5A41),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
