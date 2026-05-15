@@ -245,10 +245,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   generalErr = null;
                 });
 
-                _showSuccess(
-                  res['data']['message'] ??
-                      'OTP telah dikirim ke WhatsApp yang terdaftar.',
-                );
+                _showSuccess('OTP dikirim ke WhatsApp terdaftar.');
               } else {
                 setSheet(() {
                   generalErr =
@@ -676,20 +673,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showSuccess(String msg) {
+  void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        backgroundColor: const Color(0xFF2B5A41),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        duration: const Duration(seconds: 3),
         content: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.check_circle, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text(msg, style: const TextStyle(fontWeight: FontWeight.w500)),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  height: 1.3,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
-        backgroundColor: const Color(0xFF2B5A41),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
       ),
     );
   }

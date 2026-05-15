@@ -78,6 +78,46 @@ class ApiService {
     await prefs.remove('auth_token');
   }
 
+  static Future<Map<String, dynamic>> registerSendOtp({
+    required String name,
+    required String email,
+    required String phone,
+    required String password,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register/send-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'password': password,
+        'password_confirmation': password,
+      }),
+    );
+
+    return {'status': response.statusCode, 'data': jsonDecode(response.body)};
+  }
+
+  static Future<Map<String, dynamic>> registerVerifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register/verify-otp'),
+      headers: await _getHeaders(),
+      body: jsonEncode({'email': email, 'otp': otp}),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      await _saveToken(data);
+    }
+
+    return {'status': response.statusCode, 'data': data};
+  }
+
   // --- MEMBER PROFILE --- //
 
   /// Upload foto avatar ke /member/profile/avatar (multipart)
