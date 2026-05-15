@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/api_service.dart';
+import '../services/api_config.dart';
 import '../widgets/custom_text_field.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
@@ -111,87 +112,157 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String label,
-    required String hint,
-    required IconData prefixIcon,
-    TextInputType? keyboardType,
-    bool isPassword = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: _textPrimary,
-            letterSpacing: 0.1,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          focusNode: focusNode,
-          keyboardType: keyboardType,
-          obscureText: isPassword ? _obscurePassword : false,
-          style: const TextStyle(
-            fontSize: 16,
-            color: _textPrimary,
-            fontWeight: FontWeight.w500,
-          ),
-          cursorColor: _primaryLight,
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-            ),
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(prefixIcon, color: _textSecondary, size: 22),
-            ),
-            prefixIconConstraints:
-                const BoxConstraints(minWidth: 0, minHeight: 0),
-            suffixIcon: isPassword
-                ? Padding(
-                    padding: const EdgeInsets.only(right: 4),
-                    child: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        color: _textSecondary,
-                        size: 22,
-                      ),
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
+
+
+  void _showApiBottomSheet() {
+    String tempEnv = ApiConfig.selectedEnv;
+    final ipCtrl = TextEditingController(text: ApiConfig.customIp);
+    final portCtrl = TextEditingController(text: ApiConfig.customPort);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                top: 20, left: 24, right: 24, bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                  )
-                : null,
-            filled: true,
-            fillColor: _inputBg,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE8ECE9), width: 1),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: _primaryLight, width: 1.5),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-          ),
-        ),
-      ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Row(
+                    children: [
+                      Icon(Icons.dns_outlined, color: Color(0xFF2B5A41), size: 22),
+                      SizedBox(width: 10),
+                      Text('Konfigurasi Server', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2B5A41))),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ...['Production', 'Staging', 'Custom'].map((env) {
+                    final isSelected = tempEnv == env;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () => setModalState(() => tempEnv = env),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFFE8F1EC) : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected ? const Color(0xFF2B5A41) : Colors.grey.shade200,
+                              width: isSelected ? 1.5 : 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                                color: isSelected ? const Color(0xFF2B5A41) : Colors.grey,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(env, style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected ? const Color(0xFF2B5A41) : Colors.black87,
+                                    )),
+                                    if (env != 'Custom')
+                                      Text(
+                                        env == 'Production' ? 'Server utama' : 'Server pengujian',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                  if (tempEnv == 'Custom') ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: ipCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'IP Address',
+                        hintText: '192.168.1.100',
+                        prefixIcon: const Icon(Icons.computer, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2B5A41), width: 1.5)),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: portCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Port',
+                        hintText: '8000',
+                        prefixIcon: const Icon(Icons.settings_ethernet, size: 20),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2B5A41), width: 1.5)),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await ApiConfig.saveSetting(tempEnv, ip: ipCtrl.text.trim(), port: portCtrl.text.trim());
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Server: ${ApiConfig.baseUrl}'),
+                            backgroundColor: const Color(0xFF2B5A41),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2B5A41),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -223,13 +294,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
+                          GestureDetector(
+                            onLongPress: _showApiBottomSheet,
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.school, color: Colors.white, size: 28),
                             ),
-                            child: const Icon(Icons.school, color: Colors.white, size: 28),
                           ),
                           const SizedBox(width: 16),
                           const Expanded(
@@ -360,7 +434,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                       color: Color(0xFF333333))),
                               GestureDetector(
                                 onTap: () {
-                                  // TODO: Tampilkan form lupa password
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()));
                                 },
                                 child: const Text(
                                   'Lupa?',
@@ -472,7 +546,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
-                            child: const Text('Aktivasi Siswa', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: const Text('Aktivasi Siswa/Guru', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],

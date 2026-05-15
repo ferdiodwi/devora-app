@@ -11,29 +11,12 @@ class ClaimLookupScreen extends StatefulWidget {
   State<ClaimLookupScreen> createState() => _ClaimLookupScreenState();
 }
 
-class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTickerProviderStateMixin {
+class _ClaimLookupScreenState extends State<ClaimLookupScreen> with TickerProviderStateMixin {
   final _nisNipCtrl = TextEditingController();
   bool _isLoading = false;
   String? _errorMsg;
 
   late AnimationController _shakeController;
-
-  @override
-  void initState() {
-    super.initState();
-    _shakeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-  }
-
-  @override
-  void dispose() {
-    _shakeController.dispose();
-    _nisNipCtrl.dispose();
-    super.dispose();
-  }
-
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -46,10 +29,13 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
   static const _inputBg = Color(0xFFF1F4F2);
   static const _textPrimary = Color(0xFF1A1D1B);
   static const _textSecondary = Color(0xFF6B7770);
-
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -70,6 +56,7 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
 
   @override
   void dispose() {
+    _shakeController.dispose();
     _fadeController.dispose();
     _nisNipCtrl.dispose();
     super.dispose();
@@ -309,7 +296,7 @@ class _ClaimLookupScreenState extends State<ClaimLookupScreen> with SingleTicker
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
