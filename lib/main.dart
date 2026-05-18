@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 import 'services/api_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ApiConfig.init();
-  await NotificationService.init();
+
+  // Jangan await ApiConfig dan NotificationService di sini
+  // supaya SplashScreen Dart langsung tampil
   runApp(const DevoraApp());
 }
 
@@ -26,16 +28,35 @@ class _DevoraAppState extends State<DevoraApp> {
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    _initApp();
   }
 
-  void _checkAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    setState(() {
-      _isAuthenticated = token != null;
-      _isLoading = false;
-    });
+  Future<void> _initApp() async {
+    try {
+      // SplashScreen Dart sudah tampil saat proses ini berjalan
+      await ApiConfig.init();
+      await NotificationService.init();
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      // Durasi splash Dart
+      await Future.delayed(const Duration(seconds: 3));
+
+      if (!mounted) return;
+
+      setState(() {
+        _isAuthenticated = token != null;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -47,8 +68,8 @@ class _DevoraAppState extends State<DevoraApp> {
         scaffoldBackgroundColor: const Color(0xFFF7FAF8),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF2B5A41),
-          primary: const Color(0xFF2B5A41), // Dark Green
-          secondary: const Color(0xFFE4F1E8), // Light Mint
+          primary: const Color(0xFF2B5A41),
+          secondary: const Color(0xFFE4F1E8),
           surface: Colors.white,
         ),
         appBarTheme: const AppBarTheme(
@@ -71,7 +92,10 @@ class _DevoraAppState extends State<DevoraApp> {
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -81,15 +105,21 @@ class _DevoraAppState extends State<DevoraApp> {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          labelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
         ),
         useMaterial3: true,
       ),
-      home: _isLoading 
-        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-        : _isAuthenticated ? const HomeScreen() : const LoginScreen(),
+      home: _isLoading
+          ? const SplashScreen()
+          : _isAuthenticated
+              ? const HomeScreen()
+              : const LoginScreen(),
     );
   }
 }
-
