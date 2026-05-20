@@ -9,7 +9,8 @@ class ChatbotScreen extends StatefulWidget {
   State<ChatbotScreen> createState() => _ChatbotScreenState();
 }
 
-class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateMixin {
+class _ChatbotScreenState extends State<ChatbotScreen>
+    with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _focusNode = FocusNode();
@@ -43,7 +44,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     final res = await ApiService.getConversations();
     if (res['status'] == 200 && mounted) {
       setState(() {
-        _conversations = List<Map<String, dynamic>>.from(res['data']['data'] ?? []);
+        _conversations = List<Map<String, dynamic>>.from(
+          res['data']['data'] ?? [],
+        );
         _isLoadingConversations = false;
       });
     } else if (mounted) {
@@ -147,13 +150,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Percakapan?', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('Semua pesan dalam percakapan ini akan dihapus permanen.'),
+        title: const Text(
+          'Hapus Percakapan?',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        content: const Text(
+          'Semua pesan dalam percakapan ini akan dihapus permanen.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade600, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade600,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Hapus'),
           ),
         ],
@@ -201,8 +215,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
             child: _currentConversationId == null && _messages.isEmpty
                 ? _buildWelcomeView()
                 : _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF2B5A41)))
-                    : _buildMessageList(),
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF2B5A41)),
+                  )
+                : _buildMessageList(),
           ),
           _buildInputBar(),
         ],
@@ -223,17 +239,32 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Devora AI', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+                const Text(
+                  'Devora AI',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
                 Text(
                   _currentTitle,
-                  style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -270,7 +301,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
               decoration: const BoxDecoration(
                 color: Color(0xFF2B5A41),
-                borderRadius: BorderRadius.only(bottomRight: Radius.circular(40)),
+                borderRadius: BorderRadius.only(
+                  bottomRight: Radius.circular(40),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,10 +316,21 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
-                      const Text('Devora AI', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
+                      const Text(
+                        'Devora AI',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -303,12 +347,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                         });
                       },
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('Chat Baru', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Chat Baru',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: const Color(0xFF2B5A41),
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
@@ -320,75 +369,119 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
             // Conversations List
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-              child: Text('Riwayat Chat', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.grey.shade400, letterSpacing: 1)),
+              child: Text(
+                'Riwayat Chat',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey.shade400,
+                  letterSpacing: 1,
+                ),
+              ),
             ),
             Expanded(
               child: _isLoadingConversations
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF2B5A41)))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF2B5A41),
+                      ),
+                    )
                   : _conversations.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.chat_bubble_outline_rounded, size: 48, color: Colors.grey.shade300),
-                                const SizedBox(height: 12),
-                                Text('Belum ada percakapan', style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w600)),
-                              ],
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 48,
+                              color: Colors.grey.shade300,
                             ),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _conversations.length,
-                          itemBuilder: (context, index) {
-                            final conv = _conversations[index];
-                            final isActive = conv['id'] == _currentConversationId;
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: isActive ? const Color(0xFF2B5A41) : Colors.transparent,
-                                borderRadius: BorderRadius.circular(14),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Belum ada percakapan',
+                              style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w600,
                               ),
-                              child: ListTile(
-                                dense: true,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                leading: Icon(
-                                  Icons.chat_bubble_outline_rounded,
-                                  size: 20,
-                                  color: isActive ? Colors.white : Colors.grey.shade400,
-                                ),
-                                title: Text(
-                                  conv['title'] ?? 'Percakapan',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                                    color: isActive ? Colors.white : const Color(0xFF1E293B),
-                                  ),
-                                ),
-                                subtitle: conv['last_message'] != null
-                                    ? Text(
-                                        conv['last_message'],
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 12, color: isActive ? Colors.white70 : Colors.grey.shade500),
-                                      )
-                                    : null,
-                                trailing: IconButton(
-                                  icon: Icon(Icons.delete_outline_rounded, size: 18, color: isActive ? Colors.white70 : Colors.red.shade300),
-                                  onPressed: () => _deleteConversation(conv['id']),
-                                ),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _loadMessages(conv['id']);
-                                },
-                              ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _conversations.length,
+                      itemBuilder: (context, index) {
+                        final conv = _conversations[index];
+                        final isActive = conv['id'] == _currentConversationId;
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? const Color(0xFF2B5A41)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: ListTile(
+                            dense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            leading: Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              size: 20,
+                              color: isActive
+                                  ? Colors.white
+                                  : Colors.grey.shade400,
+                            ),
+                            title: Text(
+                              conv['title'] ?? 'Percakapan',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: isActive
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isActive
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B),
+                              ),
+                            ),
+                            subtitle: conv['last_message'] != null
+                                ? Text(
+                                    conv['last_message'],
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isActive
+                                          ? Colors.white70
+                                          : Colors.grey.shade500,
+                                    ),
+                                  )
+                                : null,
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_outline_rounded,
+                                size: 18,
+                                color: isActive
+                                    ? Colors.white70
+                                    : Colors.red.shade300,
+                              ),
+                              onPressed: () => _deleteConversation(conv['id']),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              _loadMessages(conv['id']);
+                            },
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -410,20 +503,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
-                  BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.1), blurRadius: 30, offset: const Offset(0, 15)),
+                  BoxShadow(
+                    color: const Color(0xFF2B5A41).withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                  ),
                 ],
               ),
-              child: const Icon(Icons.auto_awesome, color: Color(0xFF2B5A41), size: 56),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: Color(0xFF2B5A41),
+                size: 56,
+              ),
             ),
             const SizedBox(height: 32),
             const Text(
               'Devora AI',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1E293B),
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Asisten Pustakawan Cerdas Anda',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 40),
             // Suggestion Cards
@@ -450,7 +559,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildSuggestionCard({required IconData icon, required String title, required String subtitle}) {
+  Widget _buildSuggestionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return GestureDetector(
       onTap: () {
         final query = subtitle.replaceAll('"', '');
@@ -464,7 +577,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 5)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
           ],
         ),
         child: Row(
@@ -482,13 +599,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1E293B))),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Colors.grey.shade300),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: Colors.grey.shade300,
+            ),
           ],
         ),
       ),
@@ -515,7 +650,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Row(
-        mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
@@ -526,16 +663,25 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 color: Color(0xFF2B5A41),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+              child: const Icon(
+                Icons.auto_awesome,
+                color: Colors.white,
+                size: 16,
+              ),
             ),
             const SizedBox(width: 12),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: isUser ? const Color(0xFF2B5A41) : Colors.white,
                     borderRadius: BorderRadius.only(
@@ -557,7 +703,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                   child: _buildFormattedText(msg['message'] ?? '', isUser),
                 ),
                 // Book recommendations
-                if (!isUser && msg['books'] != null && (msg['books'] as List).isNotEmpty) ...[
+                if (!isUser &&
+                    msg['books'] != null &&
+                    (msg['books'] as List).isNotEmpty) ...[
                   const SizedBox(height: 16),
                   SizedBox(
                     height: 180,
@@ -584,13 +732,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   Widget _buildFormattedText(String text, bool isUser) {
     final spans = <TextSpan>[];
     final parts = text.split('**');
-    
+
     for (int i = 0; i < parts.length; i++) {
       if (i % 2 != 0 && i < parts.length - 1) {
-        spans.add(TextSpan(
-          text: parts[i],
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ));
+        spans.add(
+          TextSpan(
+            text: parts[i],
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          ),
+        );
       } else {
         String content = parts[i];
         if (i % 2 != 0 && i == parts.length - 1) {
@@ -614,15 +764,47 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
   }
 
   Widget _buildBookCard(Map<String, dynamic> book) {
+    final coverImage = book['cover_image']?.toString();
+    final hasCover =
+        coverImage != null &&
+        coverImage.trim().isNotEmpty &&
+        coverImage != 'null';
     final title = book['title']?.toString() ?? 'Tanpa Judul';
-    final initials = title.length > 1 ? title.substring(0, 2).toUpperCase() : title.toUpperCase();
+    final initials = title.length > 1
+        ? title.substring(0, 2).toUpperCase()
+        : title.toUpperCase();
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BookDetailScreen(book: book)),
-        );
+      onTap: () async {
+        final bookId = book['id']?.toString();
+
+        if (bookId == null || bookId.isEmpty) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => BookDetailScreen(book: book)),
+          );
+          return;
+        }
+
+        final res = await ApiService.getBookDetail(bookId);
+
+        if (!context.mounted) return;
+
+        if (res['status'] == 200 && res['data'] != null) {
+          final detail = Map<String, dynamic>.from(res['data']);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookDetailScreen(book: {...book, ...detail}),
+            ),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => BookDetailScreen(book: book)),
+          );
+        }
       },
       child: Container(
         width: 130,
@@ -631,7 +813,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 5)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
           ],
         ),
         child: Column(
@@ -647,13 +833,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
-                image: book['cover_image'] != null
-                    ? DecorationImage(image: NetworkImage(book['cover_image']), fit: BoxFit.cover)
+                image: hasCover
+                    ? DecorationImage(
+                        image: NetworkImage(coverImage),
+                        fit: BoxFit.cover,
+                      )
                     : null,
               ),
-              child: book['cover_image'] == null
+              child: !hasCover
                   ? Center(
-                      child: Text(initials, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF2B5A41).withValues(alpha: 0.2))),
+                      child: Text(
+                        initials,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF2B5A41).withValues(alpha: 0.2),
+                        ),
+                      ),
                     )
                   : null,
             ),
@@ -667,14 +863,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, height: 1.2, color: Color(0xFF1E293B)),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                      color: Color(0xFF1E293B),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     book['author'] ?? '-',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -698,7 +903,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               color: Color(0xFF2B5A41),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 16,
+            ),
           ),
           const SizedBox(width: 12),
           Container(
@@ -712,7 +921,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 bottomLeft: Radius.circular(8),
               ),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5)),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
               ],
             ),
             child: Row(
@@ -753,11 +966,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
 
   Widget _buildInputBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.of(context).padding.bottom + 16),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.of(context).padding.bottom + 16,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: Row(
@@ -778,9 +1000,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
                 style: const TextStyle(fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   hintText: 'Tanyakan sesuatu pada Devora...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14, fontWeight: FontWeight.w500),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ),
@@ -792,11 +1021,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> with TickerProviderStateM
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: _isSending ? Colors.grey.shade300 : const Color(0xFF2B5A41),
+                color: _isSending
+                    ? Colors.grey.shade300
+                    : const Color(0xFF2B5A41),
                 shape: BoxShape.circle,
                 boxShadow: _isSending
                     ? []
-                    : [BoxShadow(color: const Color(0xFF2B5A41).withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFF2B5A41).withValues(alpha: 0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
               ),
               child: Icon(
                 _isSending ? Icons.hourglass_top_rounded : Icons.send_rounded,

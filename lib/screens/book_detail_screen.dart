@@ -19,6 +19,48 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   Map<String, dynamic>? detailBook;
   bool isLoadingDetail = true;
 
+  String _safeText(dynamic value, {String fallback = '-'}) {
+    if (value == null) return fallback;
+
+    final text = value.toString().trim();
+    if (text.isEmpty || text == 'null') return fallback;
+
+    return text;
+  }
+
+  String? _safeImageUrl(dynamic value) {
+    if (value == null) return null;
+
+    final text = value.toString().trim();
+    if (text.isEmpty || text == 'null') return null;
+
+    return text;
+  }
+
+  String? _getCategoryName() {
+    final category = widget.book['category'];
+
+    if (category == null) return null;
+
+    if (category is Map) {
+      return category['name']?.toString();
+    }
+
+    return category.toString();
+  }
+
+  String? _getPublisherName() {
+    final publisher = widget.book['publisher'];
+
+    if (publisher == null) return null;
+
+    if (publisher is Map) {
+      return publisher['name']?.toString();
+    }
+
+    return publisher.toString();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -112,19 +154,27 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
               child: Center(
                 child: Builder(
                   builder: (context) {
-                    final titleStr = widget.book['title']?.toString() ?? 'B';
+                    final titleStr = _safeText(
+                      widget.book['title'],
+                      fallback: 'B',
+                    );
                     final initials = titleStr.length > 1
                         ? titleStr.substring(0, 2).toUpperCase()
                         : titleStr.toUpperCase();
+
+                    final coverImage = _safeImageUrl(
+                      widget.book['cover_image'],
+                    );
+
                     return Container(
                       height: 280,
                       width: 190,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        image: widget.book['cover_image'] != null
+                        image: coverImage != null
                             ? DecorationImage(
-                                image: NetworkImage(widget.book['cover_image']),
+                                image: NetworkImage(coverImage),
                                 fit: BoxFit.cover,
                               )
                             : null,
@@ -136,7 +186,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                         ],
                       ),
-                      child: widget.book['cover_image'] == null
+                      child: coverImage == null
                           ? Center(
                               child: Text(
                                 initials,
@@ -163,7 +213,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.book['title'] ?? 'Tanpa Judul',
+                    _safeText(widget.book['title'], fallback: 'Tanpa Judul'),
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -172,7 +222,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.book['author'] ?? 'Unknown Author',
+                    _safeText(
+                      widget.book['author'],
+                      fallback: 'Unknown Author',
+                    ),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -221,31 +274,34 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    widget.book['synopsis'] ??
-                        'Buku ini tidak memiliki sinopsis. Namun, dipastikan buku ini sangat menarik untuk dibaca dan menambah wawasan Anda di perpustakaan Devora Atheneum.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      height: 1.6,
+                    _safeText(
+                      widget.book['synopsis'] ?? widget.book['description'],
+                      fallback:
+                          'Buku ini tidak memiliki sinopsis. Namun, dipastikan buku ini sangat menarik untuk dibaca dan menambah wawasan Anda di perpustakaan Devora Atheneum.',
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   // Tags
-                  Row(
-                    children: [
-                      if (widget.book['category']?['name'] != null)
-                        _buildTag(
-                          widget.book['category']['name']
-                              .toString()
-                              .toUpperCase(),
-                        ),
-                      const SizedBox(width: 8),
-                      if (widget.book['publisher'] != null)
-                        _buildTag(
-                          widget.book['publisher'].toString().toUpperCase(),
-                        ),
-                    ],
+                  // Tags
+                  Builder(
+                    builder: (context) {
+                      final categoryName = _getCategoryName();
+                      final publisherName = _getPublisherName();
+
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (categoryName != null &&
+                              categoryName.trim().isNotEmpty)
+                            _buildTag(categoryName.toUpperCase()),
+                          if (publisherName != null &&
+                              publisherName.trim().isNotEmpty)
+                            _buildTag(publisherName.toUpperCase()),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 32),
 
