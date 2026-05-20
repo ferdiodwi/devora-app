@@ -1,4 +1,7 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html>
+
+<head>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -27,13 +30,17 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png">
 
+  <!-- Cropper JS untuk image_cropper di Flutter Web -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
   <title>devora_app</title>
   <link rel="manifest" href="manifest.json">
-  
-  
+
+
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
-  
-  
+
+
   <style id="splash-screen-style">
     html {
       height: 100%
@@ -43,7 +50,7 @@
       margin: 0;
       min-height: 100%;
       background-color: #ffffff;
-          background-size: 100% 100%;
+      background-size: 100% 100%;
     }
 
     .center {
@@ -56,19 +63,22 @@
     }
 
     .contain {
-      display:block;
-      width:100%; height:100%;
+      display: block;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
 
     .stretch {
-      display:block;
-      width:100%; height:100%;
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
     .cover {
-      display:block;
-      width:100%; height:100%;
+      display: block;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
     }
 
@@ -95,7 +105,7 @@
     @media (prefers-color-scheme: dark) {
       body {
         background-color: #ffffff;
-          }
+      }
     }
   </style>
   <script id="splash-screen-script">
@@ -106,9 +116,10 @@
     }
   </script>
 </head>
+
 <body>
-   
-  
+
+
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
@@ -120,4 +131,6 @@
   <script src="flutter_bootstrap.js" async=""></script>
 
 
-</body></html>
+</body>
+
+</html>
